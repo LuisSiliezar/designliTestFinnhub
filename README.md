@@ -2,7 +2,7 @@
 Designli Finnhub test is a sample app built using React Native and TypeScript. It is a simple stock market app that allows users to check the stock prices.
 
 ## Step 1:
-Clone the repo by running `git clone `
+Clone the repo by running `git clone https://github.com/LuisSiliezar/designliTestFinnhub`
 
 Please make sure you have git and npm installed on your machine for this to work.
 
