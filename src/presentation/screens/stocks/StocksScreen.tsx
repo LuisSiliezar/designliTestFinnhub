@@ -1,11 +1,25 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import StockPricesList from '@presentation/components/lists/StockPricesList';
+import StockChart from '@presentation/components/shared/StockChart';
+import { useStocksPrice } from '@presentation/hooks';
+import { ScrollView, StyleSheet } from 'react-native';
 
-const StocksScreen = () => {
+
+const StocksScreen: React.FC = () => {
+    const { stockData } = useStocksPrice();
+
     return (
-        <View>
-            <Text>Watchlist</Text>
-        </View>
+        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+            <StockChart stockData={stockData} />
+            <StockPricesList stockData={stockData} />
+        </ScrollView>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#f4f4f4',
+    },
+});
+
 export default StocksScreen;
