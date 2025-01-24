@@ -1,5 +1,5 @@
 import { Stock } from '@domain/entities/stock.entity';
-import { stocksAPIFetcher } from '@src/config/adapters/stocksApi.adapter';
+import { stocksAPIFetcher } from '@config/adapters/stocksApi.adapter';
 import { useEffect, useState } from 'react';
 import * as UseCases from '@core/use-cases';
 
@@ -14,7 +14,7 @@ export const useStocks = () => {
     const initialLoadingState = async () => {
         setIsLoading(true);
         try {
-            const allStocks = await UseCases.allStocksUseCases(stocksAPIFetcher);
+            const allStocks = await UseCases.allStocksUseCases(stocksAPIFetcher());
             setStocks(allStocks);
         } catch (error) {
             console.error('Error fetching stocks:', error);

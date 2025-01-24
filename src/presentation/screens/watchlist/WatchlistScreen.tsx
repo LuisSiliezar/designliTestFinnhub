@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStockWebSocket } from '@presentation/hooks';
 import StockCard from '@presentation/components/shared/StockCard';
 import { View, FlatList, StyleSheet, Text } from 'react-native';
+import { Stock } from '@domain/entities';
 
 const WatchlistScreen = () => {
     const [symbols] = useState<string[]>([
@@ -15,13 +16,13 @@ const WatchlistScreen = () => {
         'GS', 'JPM', 'C', 'AXP', 'MS',
     ]);
 
-    const stocks = useStockWebSocket(symbols);
-    const renderItem = ({ item }: { item: { symbol: string; name: string; price: number; changePercentage: number } }) => (
+    const { stocks } = useStockWebSocket(symbols);
+    const renderItem = ({ item }: { item: Stock }) => (
         <StockCard
-            symbol={item.symbol}
-            name={item.name}
-            price={item.price}
-            changePercentage={item.changePercentage}
+            symbol={item.symbol ?? ''}
+            name={item.name ?? ''}
+            price={item.currentPrice ?? 0}
+            changePercentage={item.changePercentage ?? 0}
         />
     );
 
@@ -36,7 +37,7 @@ const WatchlistScreen = () => {
                     <FlatList
                         data={stocks}
                         renderItem={renderItem}
-                        keyExtractor={(item) => item.symbol}
+                        keyExtractor={(item) => item.symbol ?? ''}
                         showsVerticalScrollIndicator={false}
                     />
                 )

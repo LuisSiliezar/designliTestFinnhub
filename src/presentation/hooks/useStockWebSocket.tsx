@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-
-interface Stock {
-    symbol: string;
-    name: string;
-    price: number;
-    previousPrice: number;
-    changePercentage: number;
-}
+import { Stock } from '@domain/entities';
 
 const getStockName = (symbol: string): string => {
     const stockNames: { [key: string]: string } = {
@@ -82,15 +75,27 @@ export const useStockWebSocket = (symbols: string[]) => {
                     const price = trade.p;
 
                     setStocks((prevStocks) => {
-                        const existingStock = prevStocks.find((stock) => stock.symbol === symbol);
-                        if (existingStock) {
-                            const changePercentage = ((price - existingStock.previousPrice) / existingStock.previousPrice) * 100;
+                        const existingStockIndex = prevStocks.findIndex((stock) => stock.symbol === symbol);
 
-                            existingStock.price = price;
-                            existingStock.changePercentage = changePercentage;
-                            existingStock.previousPrice = price;
+                        if (existingStockIndex !== -1) {
+                            const existingStock = prevStocks[existingStockIndex];
 
-                            return [...prevStocks];
+                            const previousPrice = existingStock.previousPrice ?? price;
+
+                            const changePercentage = previousPrice !== 0
+                                ? ((price - previousPrice) / previousPrice) * 100
+                                : 0;
+                            const updatedStock = {
+                                ...existingStock,
+                                previousPrice: price,
+                                currentPrice: price,
+                                changePercentage: changePercentage,
+                            };
+
+                            const updatedStocks = [...prevStocks];
+                            updatedStocks[existingStockIndex] = updatedStock;
+
+                            return updatedStocks;
                         } else {
                             const name = getStockName(symbol);
                             return [
@@ -98,7 +103,7 @@ export const useStockWebSocket = (symbols: string[]) => {
                                 {
                                     symbol,
                                     name,
-                                    price,
+                                    currentPrice: price,
                                     previousPrice: price,
                                     changePercentage: 0,
                                 },
@@ -127,5 +132,5 @@ export const useStockWebSocket = (symbols: string[]) => {
         };
     }, [symbols]);
 
-    return stocks;
+    return { stocks };
 };
