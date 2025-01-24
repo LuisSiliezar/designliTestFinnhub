@@ -1,10 +1,11 @@
 import React from 'react';
 import AlertScreen from '@presentation/screens/alert/AlertScreen';
 import { createStackNavigator } from '@react-navigation/stack';
+import WatchlistScreen from '@presentation/screens/watchlist/WatchlistScreen';
 
 export type RootStackParams = {
     Alert: undefined;
-    // Watchlist: undefined;
+    Watchlist: undefined;
     // Stocks: undefined;
 };
 
@@ -12,7 +13,7 @@ const Stack = createStackNavigator<RootStackParams>();
 
 const StackNavigation = () => {
     return (
-        <Stack.Navigator initialRouteName="Alert"
+        <Stack.Navigator initialRouteName="Watchlist"
             screenOptions={{
                 headerTitleStyle: {
                     fontWeight: 'bold',
@@ -25,8 +26,8 @@ const StackNavigation = () => {
             }}
         >
             <Stack.Screen name="Alert" component={AlertScreen} />
-            {/* <Stack.Screen name="Watchlist" component={WatchlistScreen} />
-            <Stack.Screen name="Stocks" component={StocksScreen} /> */}
+            <Stack.Screen name="Watchlist" component={WatchlistScreen} />
+            {/* <Stack.Screen name="Stocks" component={StocksScreen} /> */}
         </Stack.Navigator>
     );
 };
