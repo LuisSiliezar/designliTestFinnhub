@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { useStocks } from '@presentation/hooks';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useStocks } from '@src/presentation/hooks/useStocks';
 
 const AlertScreen = () => {
   const [open, setOpen] = useState(false);
