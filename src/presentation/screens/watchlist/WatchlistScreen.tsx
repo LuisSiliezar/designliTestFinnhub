@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStockWebSocket } from '@presentation/hooks';
 import StockCard from '@presentation/components/shared/StockCard';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet, Text } from 'react-native';
 import { Stock } from '@domain/entities';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParams } from '@src/presentation/routes/StackNavigation';
@@ -32,7 +32,7 @@ const WatchlistScreen = () => {
         'GS', 'JPM', 'C', 'AXP', 'MS',
     ]);
 
-    const { stocks } = useStockWebSocket(symbols);
+    const { stocks, marketStatus } = useStockWebSocket(symbols);
     const renderItem = ({ item }: { item: Stock }) => (
         <StockCard
             symbol={item.symbol ?? ''}
@@ -41,6 +41,13 @@ const WatchlistScreen = () => {
             changePercentage={item.changePercentage ?? 0}
         />
     );
+    if (marketStatus.isOpen === false) {
+        return (
+            <View style={styles.container}>
+                <Text>Market is closed</Text>
+            </View>
+        );
+    }
 
     if (stocks.length === 0) {
         return (

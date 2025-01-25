@@ -10,9 +10,6 @@ export const GetBySymbolStockPriceUseCases = async (fetcher: HttpAdapter, symbol
             token: process.env.API_KEY,
         });
 
-        if (!stocksResponse || !stocksResponse) {
-            throw new Error('Invalid stock response data');
-        }
         const currentStockPrice = StocksMapper.fromAPIStockPriceResultToLocalEntity(stocksResponse, symbol);
 
         return currentStockPrice;
