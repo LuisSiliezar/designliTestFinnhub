@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useStockWebSocket } from '@presentation/hooks';
 import StockCard from '@presentation/components/shared/StockCard';
-import { View, FlatList, StyleSheet, Text } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
 import { Stock } from '@domain/entities';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParams } from '@src/presentation/routes/StackNavigation';
 import { useNavigation } from '@react-navigation/native';
 import IconButton from '@src/presentation/components/shared/IconButton';
 import { SkeletonLoaderWatchlist } from '@src/presentation/components/shared/SkeletonLoaderWatchlist';
+import MarketClosedAnimation from '@src/presentation/components/shared/MarketClosedAnimation';
 type NavigationProp = StackNavigationProp<RootStackParams, 'Watchlist'>;
 
 const WatchlistScreen = () => {
@@ -15,6 +16,7 @@ const WatchlistScreen = () => {
 
     useEffect(() => {
         navigation.setOptions({
+            headerTitle: 'Watchlist',
             headerLeft: () => (
                 <IconButton iconName="chevron-back-outline" onPress={() => navigation.goBack()} />
             ),
@@ -43,9 +45,7 @@ const WatchlistScreen = () => {
     );
     if (marketStatus.isOpen === false) {
         return (
-            <View style={styles.container}>
-                <Text>Market is closed</Text>
-            </View>
+            <MarketClosedAnimation message="Market is closed at the moment" submessage="Please try again at a later time" />
         );
     }
 
