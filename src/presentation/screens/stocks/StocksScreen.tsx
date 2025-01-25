@@ -8,6 +8,7 @@ import IconButton from '@src/presentation/components/shared/IconButton';
 
 import { RootStackParams } from '@presentation/routes/StackNavigation';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { SkeletonLoaderStocks } from '@src/presentation/components/shared';
 
 type NavigationProp = StackNavigationProp<RootStackParams, 'Stocks'>;
 
@@ -29,7 +30,7 @@ const StocksScreen = () => {
     if (isLoading) {
         return (
             <View>
-                <Text>Loading...</Text>
+                <SkeletonLoaderStocks />
             </View>
         );
     }

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useStockWebSocket } from '@presentation/hooks';
 import StockCard from '@presentation/components/shared/StockCard';
-import { View, FlatList, StyleSheet, Text } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
 import { Stock } from '@domain/entities';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParams } from '@src/presentation/routes/StackNavigation';
 import { useNavigation } from '@react-navigation/native';
 import IconButton from '@src/presentation/components/shared/IconButton';
+import { SkeletonLoaderWatchlist } from '@src/presentation/components/shared/SkeletonLoaderWatchlist';
 type NavigationProp = StackNavigationProp<RootStackParams, 'Watchlist'>;
 
 const WatchlistScreen = () => {
@@ -32,7 +33,6 @@ const WatchlistScreen = () => {
     ]);
 
     const { stocks } = useStockWebSocket(symbols);
-    console.log(stocks);
     const renderItem = ({ item }: { item: Stock }) => (
         <StockCard
             symbol={item.symbol ?? ''}
@@ -44,9 +44,7 @@ const WatchlistScreen = () => {
 
     if (stocks.length === 0) {
         return (
-            <View>
-                <Text>Loading...</Text>
-            </View>
+            <SkeletonLoaderWatchlist />
         );
     }
 
