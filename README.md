@@ -34,5 +34,6 @@ You should now be able to run the app on your device or emulator.
 
 ### Troubeshooting on device
 Please refer to (https://reactnative.dev/docs/running-on-device) for troubleshooting.
+>**Note**: Please take into account the market hours due to the nature of the app, the market is closed during the day and opens at night and is closed on weekends.
 
 >**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/getting-started-without-a-framework) instructions till "Creating a new application" step, before proceeding.
