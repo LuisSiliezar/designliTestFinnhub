@@ -64,15 +64,15 @@ const styles = StyleSheet.create({
     smallSkeleton: {
         width: 80,
     },
-    largeSkeletonContainer: {
-        marginTop: 20,
-    },
     cardContainer: {
         marginTop: 10,
     },
     cardSkeleton: {
         height: 50,
         borderRadius: 8,
+    },
+    largeSkeletonContainer: {
+        marginTop: 20,
     },
     largeSkeleton: {
         width: '100%',
