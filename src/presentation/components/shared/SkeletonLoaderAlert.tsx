@@ -22,6 +22,9 @@ export const SkeletonLoaderAlert = () => {
                 <View style={styles.cardContainer}>
                     <View style={styles.cardSkeleton} />
                 </View>
+                <View style={styles.largeSkeletonContainer}>
+                    <View style={styles.largeSkeleton} />
+                </View>
             </View>
         </SkeletonPlaceholder>
     );
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
     },
     largeSkeleton: {
         width: '100%',
-        height: 200,
+        height: 500,
         borderRadius: 8,
     },
 });

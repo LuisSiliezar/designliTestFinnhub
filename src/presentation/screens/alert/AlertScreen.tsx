@@ -7,6 +7,8 @@ import { View, Text, TextInput, Alert, StyleSheet, Pressable } from 'react-nativ
 import DropDownPicker from 'react-native-dropdown-picker';
 import IconButton from '@src/presentation/components/shared/IconButton';
 import { SkeletonLoaderAlert } from '@src/presentation/components/shared';
+import { useStockAlertStore } from '@src/core/store/stock-alert.store';
+import StockSavedPricesList from '@src/presentation/components/lists/StockSavedPricesList';
 
 type NavigationProp = StackNavigationProp<RootStackParams, 'Alert'>;
 
@@ -21,11 +23,13 @@ const AlertScreen = () => {
     });
   }, [navigation]);
 
+  const { isLoading, stocks } = useStocks();
   const [open, setOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [priceAlert, setPriceAlert] = useState<string>('');
+  const stockList = useStockAlertStore(state => state.stockList);
+  const addStock = useStockAlertStore(state => state.addStock);
 
-  const { isLoading, stocks } = useStocks();
   const handlePriceAlertChange = (text: string) => {
     const numericText = text.replace(/[^0-9]/g, '').slice(0, 8);
     setPriceAlert(numericText);
@@ -35,7 +39,14 @@ const AlertScreen = () => {
     if (!selectedStock || !priceAlert) {
       Alert.alert('Error', 'Select stock and price alert');
     } else {
-      Alert.alert('Success', `Alert set for ${selectedStock} at $${priceAlert}`);
+      const stockExists = stockList.some(stock => stock.symbol === selectedStock);
+
+      if (stockExists) {
+        Alert.alert('Error', `Alert for ${selectedStock} already exists!`);
+      } else {
+        addStock({ symbol: selectedStock, currentPrice: Number(priceAlert) });
+        Alert.alert('Success', `Alert set for ${selectedStock} at $${priceAlert}`);
+      }
     }
   };
 
@@ -74,6 +85,7 @@ const AlertScreen = () => {
       <Pressable style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Set Alert</Text>
       </Pressable>
+      <StockSavedPricesList stockData={stockList} />
     </View>
   );
 };

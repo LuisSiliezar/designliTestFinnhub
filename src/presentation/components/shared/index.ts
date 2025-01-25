@@ -4,3 +4,4 @@ export * from './SkeletonLoaderStocks';
 export * from './SkeletonLoaderWatchlist';
 export * from './StockCard';
 export * from './StockChart';
+export * from './StockPriceItem';
