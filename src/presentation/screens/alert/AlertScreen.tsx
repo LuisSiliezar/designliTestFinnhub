@@ -6,6 +6,7 @@ import { useStocks } from '@presentation/hooks';
 import { View, Text, TextInput, Alert, StyleSheet, Pressable } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import IconButton from '@src/presentation/components/shared/IconButton';
+import { SkeletonLoaderAlert } from '@src/presentation/components/shared';
 
 type NavigationProp = StackNavigationProp<RootStackParams, 'Alert'>;
 
@@ -40,9 +41,7 @@ const AlertScreen = () => {
 
   if (isLoading) {
     return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
+      <SkeletonLoaderAlert />
     );
   }
 
