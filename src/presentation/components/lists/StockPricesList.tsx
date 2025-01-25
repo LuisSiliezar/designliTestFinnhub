@@ -10,6 +10,7 @@ interface StockListProps {
 const StockPricesList = ({ stockData }: StockListProps) => {
     return (
         <ScrollView style={styles.stockContainer}>
+            <Text style={styles.title}>Stocks List</Text>
             {stockData.map((stock, index) => (
                 <View key={index} style={styles.stockItem}>
                     <Text style={styles.stockSymbol}>{stock.symbol}</Text>
@@ -22,6 +23,14 @@ const StockPricesList = ({ stockData }: StockListProps) => {
 
 const styles = StyleSheet.create({
     stockContainer: {
+        backgroundColor: '#efefef',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        marginHorizontal: 12,
+        marginTop: 20,
     },
     stockItem: {
         flexDirection: 'row',
@@ -29,8 +38,8 @@ const styles = StyleSheet.create({
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 12,
-        backgroundColor: '#ffffff',
-        borderRadius: 8,
+        backgroundColor: '#fff',
+
     },
     stockSymbol: {
         fontSize: 18,
