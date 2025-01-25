@@ -57,7 +57,7 @@ export const useStockWebSocket = (symbols: string[]) => {
             setMarketStatus(market);
             if (!market.isOpen) { return; }
 
-            const socketConnection = new WebSocket(`wss://ws.finnhub.io?token=${process.env.API_KEY}`);
+            const socketConnection = new WebSocket(`${process.env.SOCKET_URL}?token=${process.env.API_KEY}`);
 
             socketConnection.onopen = () => {
                 console.log('WebSocket connected');

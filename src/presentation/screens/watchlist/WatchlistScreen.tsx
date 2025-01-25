@@ -43,13 +43,14 @@ const WatchlistScreen = () => {
             changePercentage={item.changePercentage ?? 0}
         />
     );
+
     if (marketStatus.isOpen === false) {
         return (
             <MarketClosedAnimation message="Market is closed at the moment" submessage="Please try again at a later time" />
         );
     }
 
-    if (stocks.length === 0) {
+    if (stocks.length === 0 && marketStatus.isOpen) {
         return (
             <SkeletonLoaderWatchlist />
         );
