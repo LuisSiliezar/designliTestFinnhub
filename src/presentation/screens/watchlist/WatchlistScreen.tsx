@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStockWebSocket } from '@presentation/hooks';
 import StockCard from '@presentation/components/shared/StockCard';
 import { View, FlatList, StyleSheet, Text } from 'react-native';
 import { Stock } from '@domain/entities';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParams } from '@src/presentation/routes/StackNavigation';
+import { useNavigation } from '@react-navigation/native';
+import IconButton from '@src/presentation/components/shared/IconButton';
+type NavigationProp = StackNavigationProp<RootStackParams, 'Watchlist'>;
 
 const WatchlistScreen = () => {
+    const navigation = useNavigation<NavigationProp>();
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <IconButton iconName="chevron-back-outline" onPress={() => navigation.goBack()} />
+            ),
+        });
+    }, [navigation]);
+
     const [symbols] = useState<string[]>([
         'AAPL', 'GOOG', 'AMZN', 'MSFT', 'TSLA',
         'META', 'NFLX', 'NVDA', 'AMD', 'INTC',
@@ -17,6 +32,7 @@ const WatchlistScreen = () => {
     ]);
 
     const { stocks } = useStockWebSocket(symbols);
+    console.log(stocks);
     const renderItem = ({ item }: { item: Stock }) => (
         <StockCard
             symbol={item.symbol ?? ''}
@@ -26,28 +42,27 @@ const WatchlistScreen = () => {
         />
     );
 
-    // TODO: CREATE LOADING COMPONENT
+    if (stocks.length === 0) {
+        return (
+            <View>
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            {
-                stocks.length === 0 ? (
-                    <Text>Loading...</Text>
-                ) : (
-
-                    <FlatList
-                        data={stocks}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.symbol ?? ''}
-                        showsVerticalScrollIndicator={false}
-                    />
-                )
-            }
+            <FlatList
+                data={stocks}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.symbol ?? ''}
+                showsVerticalScrollIndicator={false}
+            />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    // TODO: CREATE A GLOBAL STYLESHEET
     container: {
         flex: 1,
         marginVertical: 12,

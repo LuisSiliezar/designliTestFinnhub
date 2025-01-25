@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { RootStackParams } from '@src/presentation/routes/StackNavigation';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
 import { useStocks } from '@presentation/hooks';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Alert, StyleSheet, Pressable } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import IconButton from '@src/presentation/components/shared/IconButton';
+
+type NavigationProp = StackNavigationProp<RootStackParams, 'Alert'>;
 
 const AlertScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <IconButton iconName="chevron-back-outline" onPress={() => navigation.goBack()} />
+      ),
+    });
+  }, [navigation]);
+
   const [open, setOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [priceAlert, setPriceAlert] = useState<string>('');
 
   const { isLoading, stocks } = useStocks();
+  const handlePriceAlertChange = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, '').slice(0, 8);
+    setPriceAlert(numericText);
+  };
 
   const handleSubmit = () => {
     if (!selectedStock || !priceAlert) {
@@ -18,44 +38,47 @@ const AlertScreen = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>Set Price Alert</Text>
-
-      {isLoading ? (
-        <Text>Loading stocks...</Text>
-      ) : (
-        <>
-          <DropDownPicker
-            open={open}
-            setOpen={setOpen}
-            items={stocks.map(stock => ({
-              label: stock.name,
-              value: stock.symbol,
-            }))}
-            value={selectedStock}
-            placeholder="Select a stock"
-            containerStyle={styles.dropdownContainer}
-            style={styles.dropdown}
-            onChangeValue={(item) => setSelectedStock(item)}
-            setValue={setSelectedStock}
-            multiple={false}
-          />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Set price alert"
-            value={priceAlert}
-            onChangeText={setPriceAlert}
-          />
-          <Button title="Set Alert" onPress={handleSubmit} />
-        </>
-      )}
+      <DropDownPicker
+        open={open}
+        setOpen={setOpen}
+        items={stocks.map(stock => ({
+          label: stock.name,
+          value: stock.symbol,
+        }))}
+        value={selectedStock}
+        placeholder="Select a stock"
+        containerStyle={styles.dropdownContainer}
+        dropDownContainerStyle={styles.dropdownContent}
+        style={styles.dropdown}
+        onChangeValue={(item) => setSelectedStock(item)}
+        setValue={setSelectedStock}
+        multiple={false}
+      />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        placeholder="Set price alert"
+        value={priceAlert}
+        onChangeText={handlePriceAlertChange}
+      />
+      <Pressable style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Set Alert</Text>
+      </Pressable>
     </View>
   );
 };
 
-// TODO: Edit styles
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -63,26 +86,43 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 18,
-    marginBottom: 10,
+    marginBottom: 20,
     fontWeight: 'bold',
   },
   dropdownContainer: {
-    height: 40,
     marginBottom: 20,
   },
+  dropdownContent: {
+    backgroundColor: '#fff',
+    borderWidth: 0.2,
+  },
   dropdown: {
-    backgroundColor: '#fafafa',
-    borderWidth: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    height: 30,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 20,
+    padding: 15,
+    marginVertical: 10,
     borderRadius: 5,
     fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#2E2F30',
+    marginVertical: 10,
+    borderRadius: 5,
+    height: 45,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

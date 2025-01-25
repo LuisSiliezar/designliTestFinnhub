@@ -11,11 +11,11 @@ export type RootStackParams = {
 };
 
 const Stack = createStackNavigator<RootStackParams>();
-
 const StackNavigation = () => {
     return (
-        <Stack.Navigator initialRouteName="Watchlist"
+        <Stack.Navigator initialRouteName="Stocks"
             screenOptions={{
+                headerTitleAlign: 'center',
                 headerTitleStyle: {
                     fontWeight: 'bold',
                     fontSize: 20,
@@ -24,6 +24,10 @@ const StackNavigation = () => {
                     backgroundColor: 'white',
                 },
                 headerShadowVisible: false,
+                headerTitle: '',
+                cardStyle: {
+                    backgroundColor: '#FFFFFF',
+                },
             }}
         >
             <Stack.Screen name="Alert" component={AlertScreen} />
