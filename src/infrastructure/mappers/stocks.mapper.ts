@@ -1,5 +1,5 @@
-import type { Stock } from '@domain/entities';
-import type { StockPriceResponse, StockResponse } from '@infrastructure/interfaces';
+import type { MarketStatus, Stock } from '@domain/entities';
+import type { StockMarketStatusResponse, StockPriceResponse, StockResponse } from '@infrastructure/interfaces';
 
 export class StocksMapper {
     static fromAPIStocksResultToLocalEntity(result: StockResponse): Stock {
@@ -13,6 +13,12 @@ export class StocksMapper {
         return {
             symbol: symbol,
             currentPrice: result.c,
+        };
+    }
+    static fromAPIStockMarketStatusResultToLocalEntity(result: StockMarketStatusResponse): MarketStatus {
+        return {
+            market: result.exchange,
+            isOpen: result.isOpen,
         };
     }
 
