@@ -65,3 +65,42 @@ Please refer to (https://reactnative.dev/docs/running-on-device) for troubleshoo
 
 5. **Environment Setup**:
    - Ensure you've completed the [React Native - Environment Setup](https://reactnative.dev/docs/getting-started-without-a-framework) instructions up to the "Creating a new application" step before proceeding.
+
+
+# GENERAL DOCUMENTATION
+
+### Core
+**Purpose:** Contains the core business logic and entities of the application.
+
+- **entities/**: Defines the core business objects.  
+  _Example:_ `User.ts`, `Stock.ts`
+
+- **use-cases/**: Contains the application-specific business rules.  
+  _Example:_ `CreateUser.ts`, `FetchStocks.ts`
+
+- **interfaces/**: Defines the interfaces for the core layer.  
+  _Example:_ `IUserRepository.ts`, `IStockRepository.ts`
+
+### Data
+**Purpose:** Manages data sources and repositories.
+
+- **repositories/**: Implements the repository interfaces defined in the core layer.  
+  _Example:_ `UserRepository.ts`, `StockRepository.ts`
+
+- **sources/**: Contains data source implementations (e.g., API clients, database clients).  
+  _Example:_ `UserAPI.ts`, `StockAPI.ts`
+
+### Presentation
+**Purpose:** Manages the user interface and user experience.
+
+- **components/**: Contains reusable UI components.  
+  _Example:_ `Button.tsx`, `IconButton.tsx`
+
+- **hooks/**: Contains custom hooks for managing state and side effects.  
+  _Example:_ `useStocks.tsx`, `useUser.tsx`
+
+- **screens/**: Contains the screen components for different routes.  
+  _Example:_ `AlertScreen.tsx`, `HomeScreen.tsx`
+
+- **stores/**: Manages global state using state management libraries.  
+  _Example:_ `userStore.ts`, `stockAlertStore.ts`
