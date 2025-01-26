@@ -41,6 +41,8 @@ You should now be able to run the app on your device or emulator.
 Please refer to (https://reactnative.dev/docs/running-on-device) for troubleshooting.
 >**Note**: Please take into account the market hours due to the nature of the app, the market is closed during the day and opens at night and is closed on weekends.
 >**Note**: Please consider that the API is a free service and may be subject to rate limits. so please be patient and do not overload the server. and you may encounter errors or slowdowns during testing or a 429 error.
->**Note**: Unfortunately the 0Auth has a issue with the package `react-native-auth0` I got it to work on iOS without any issues but on Android it doesn't work. I'll refer the link to the issue `https://github.com/auth0/react-native-auth0/issues/560`.
+
+>**Note**: Unfortunately the 0Auth has a issue with the package `react-native-auth0` I got it to work on iOS without any issues but on Android it doesn't work. I'll refer the link to the issue `https://github.com/auth0/react-native-auth0/issues/560` & `https://github.com/auth0/react-native-auth0/issues` & `https://github.com/auth0/react-native-auth0/issues/1038` & `https://github.com/auth0/react-native-auth0/issues/1028`.
+
 
 >**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/getting-started-without-a-framework) instructions till "Creating a new application" step, before proceeding.
