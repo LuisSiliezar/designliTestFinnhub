@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { MarketStatus, Stock } from '@domain/entities';
 import { getStockMarketStatus } from '@core/actions';
+import { useStockAlertStore } from '@src/core/store/stock-alert.store';
+import notificationsService from '@src/infrastructure/services/notifications.service';
 
 const getStockName = (symbol: string): string => {
     const stockNames: { [key: string]: string } = {
@@ -51,6 +53,7 @@ export const useStockWebSocket = (symbols: string[]) => {
     const [_socket, setSocket] = useState<WebSocket | null>(null);
     const [stocks, setStocks] = useState<Stock[]>([]);
     const [marketStatus, setMarketStatus] = useState<MarketStatus>({ market: '', isOpen: false });
+    const stockList = useStockAlertStore((state) => state.stockList);
 
     useEffect(() => {
         getStockMarketStatus().then((market) => {
@@ -91,6 +94,7 @@ export const useStockWebSocket = (symbols: string[]) => {
                                 const changePercentage = previousPrice !== 0
                                     ? ((price - previousPrice) / previousPrice) * 100
                                     : 0;
+
                                 const updatedStock = {
                                     ...existingStock,
                                     previousPrice: price,
@@ -100,6 +104,15 @@ export const useStockWebSocket = (symbols: string[]) => {
 
                                 const updatedStocks = [...prevStocks];
                                 updatedStocks[existingStockIndex] = updatedStock;
+
+                                const stockInStockList = stockList.find(stock => stock.symbol === symbol);
+                                if (stockInStockList && stockInStockList.currentPrice !== price) {
+                                    stockInStockList.currentPrice = price;
+                                    notificationsService.showLocalNotification(
+                                        `${stockInStockList.name}`,
+                                        `New Price: $${price.toFixed(2)}`
+                                    );
+                                }
 
                                 return updatedStocks;
                             } else {
@@ -138,7 +151,7 @@ export const useStockWebSocket = (symbols: string[]) => {
             };
         });
 
-    }, [symbols]);
+    }, [symbols, stockList]);
 
     return { stocks, marketStatus };
 };
