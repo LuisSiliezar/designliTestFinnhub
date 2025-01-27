@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MarketStatus, Stock } from '@domain/entities';
-import { getStockMarketStatus } from '@core/actions';
+// import { getStockMarketStatus } from '@core/actions';
 import { useStockAlertStore } from '@src/core/store/stock-alert.store';
 import notificationsService from '@src/infrastructure/services/notifications.service';
 
@@ -52,104 +52,102 @@ const getStockName = (symbol: string): string => {
 export const useStockWebSocket = (symbols: string[]) => {
     const [_socket, setSocket] = useState<WebSocket | null>(null);
     const [stocks, setStocks] = useState<Stock[]>([]);
-    const [marketStatus, setMarketStatus] = useState<MarketStatus>({ market: '', isOpen: false });
+    const [marketStatus, _setMarketStatus] = useState<MarketStatus>({ market: 'US', isOpen: true });
     const stockList = useStockAlertStore((state) => state.stockList);
 
     useEffect(() => {
-        getStockMarketStatus().then((market) => {
-            setMarketStatus(market);
-            if (!market.isOpen) { return; }
+        // getStockMarketStatus().then((market) => {
+        // setMarketStatus(market);
+        const socketConnection = new WebSocket(`${process.env.SOCKET_URL}?token=${process.env.API_KEY}`);
 
-            const socketConnection = new WebSocket(`${process.env.SOCKET_URL}?token=${process.env.API_KEY}`);
+        socketConnection.onopen = () => {
+            console.log('WebSocket connected');
+            symbols.forEach((stock) => {
+                socketConnection.send(
+                    JSON.stringify({
+                        type: 'subscribe',
+                        symbol: stock,
+                    })
+                );
+            });
+        };
 
-            socketConnection.onopen = () => {
-                console.log('WebSocket connected');
-                symbols.forEach((stock) => {
-                    socketConnection.send(
-                        JSON.stringify({
-                            type: 'subscribe',
-                            symbol: stock,
-                        })
-                    );
-                });
-            };
+        socketConnection.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
 
-            socketConnection.onmessage = (event) => {
-                try {
-                    const message = JSON.parse(event.data);
+                if (message.type === 'trade' && message.data && message.data.length > 0) {
+                    const trade = message.data[0];
+                    const symbol = trade.s;
+                    const price = trade.p;
 
-                    if (message.type === 'trade' && message.data && message.data.length > 0) {
-                        const trade = message.data[0];
-                        const symbol = trade.s;
-                        const price = trade.p;
+                    setStocks((prevStocks) => {
+                        const existingStockIndex = prevStocks.findIndex((stock) => stock.symbol === symbol);
 
-                        setStocks((prevStocks) => {
-                            const existingStockIndex = prevStocks.findIndex((stock) => stock.symbol === symbol);
+                        if (existingStockIndex !== -1) {
+                            const existingStock = prevStocks[existingStockIndex];
 
-                            if (existingStockIndex !== -1) {
-                                const existingStock = prevStocks[existingStockIndex];
+                            const previousPrice = existingStock.previousPrice ?? price;
 
-                                const previousPrice = existingStock.previousPrice ?? price;
+                            const changePercentage = previousPrice !== 0
+                                ? ((price - previousPrice) / previousPrice) * 100
+                                : 0;
 
-                                const changePercentage = previousPrice !== 0
-                                    ? ((price - previousPrice) / previousPrice) * 100
-                                    : 0;
+                            const updatedStock = {
+                                ...existingStock,
+                                previousPrice: price,
+                                currentPrice: price,
+                                changePercentage: changePercentage,
+                            };
 
-                                const updatedStock = {
-                                    ...existingStock,
-                                    previousPrice: price,
-                                    currentPrice: price,
-                                    changePercentage: changePercentage,
-                                };
+                            const updatedStocks = [...prevStocks];
+                            updatedStocks[existingStockIndex] = updatedStock;
 
-                                const updatedStocks = [...prevStocks];
-                                updatedStocks[existingStockIndex] = updatedStock;
-
-                                const stockInStockList = stockList.find(stock => stock.symbol === symbol);
-                                if (stockInStockList && stockInStockList.currentPrice !== price) {
-                                    stockInStockList.currentPrice = price;
-                                    notificationsService.showLocalNotification(
-                                        `${stockInStockList.name}`,
-                                        `New Price: $${price.toFixed(2)}`
-                                    );
-                                }
-
-                                return updatedStocks;
-                            } else {
-                                const name = getStockName(symbol);
-                                return [
-                                    ...prevStocks,
-                                    {
-                                        symbol,
-                                        name,
-                                        currentPrice: price,
-                                        previousPrice: price,
-                                        changePercentage: 0,
-                                    },
-                                ];
+                            const stockInStockList = stockList.find(stock => stock.symbol === symbol);
+                            if (stockInStockList && stockInStockList.currentPrice !== price) {
+                                stockInStockList.currentPrice = price;
+                                notificationsService.showLocalNotification(
+                                    `${stockInStockList.name}`,
+                                    `New Price: $${price.toFixed(2)}`
+                                );
                             }
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error parsing WebSocket message:', error);
+
+                            return updatedStocks;
+                        } else {
+                            const name = getStockName(symbol);
+                            return [
+                                ...prevStocks,
+                                {
+                                    symbol,
+                                    name,
+                                    currentPrice: price,
+                                    previousPrice: price,
+                                    changePercentage: 0,
+                                },
+                            ];
+                        }
+                    });
                 }
-            };
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
 
-            socketConnection.onerror = (error) => {
-                console.error('WebSocket Error:', error);
-            };
+        socketConnection.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+        };
 
-            socketConnection.onclose = () => {
-            };
+        socketConnection.onclose = () => {
+        };
 
-            setSocket(socketConnection);
+        setSocket(socketConnection);
 
-            return () => {
-                if (socketConnection) {
-                    socketConnection.close();
-                }
-            };
-        });
+        return () => {
+            if (socketConnection) {
+                socketConnection.close();
+            }
+        };
+        // });
 
     }, [symbols, stockList]);
 

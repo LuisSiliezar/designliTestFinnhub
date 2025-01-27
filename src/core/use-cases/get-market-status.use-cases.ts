@@ -4,6 +4,7 @@ import { StocksMapper } from '@infrastructure/mappers';
 import { StockMarketStatusResponse } from '@infrastructure/interfaces';
 
 export const GetMarketStatusUseCases = async (fetcher: HttpAdapter): Promise<MarketStatus> => {
+//    !ENDPOINT NOT RETURNING THE CORRECT DATA (FINNHUB ISSUE)
     try {
         const marketResponse = await fetcher.get<StockMarketStatusResponse>('stock/market-status', {
             token: process.env.API_KEY,

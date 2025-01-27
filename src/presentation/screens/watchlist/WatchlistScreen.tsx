@@ -44,7 +44,7 @@ const WatchlistScreen = () => {
         />
     );
 
-    if (marketStatus.isOpen === false) {
+    if (!marketStatus.isOpen) {
         return (
             <MarketClosedAnimation message="Market is closed at the moment" submessage="Please try again at a later time" />
         );
