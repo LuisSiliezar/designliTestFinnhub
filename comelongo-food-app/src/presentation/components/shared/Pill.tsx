@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
-import { colors, radius, typography } from '@presentation/theme';
+import { Text, ViewStyle } from 'react-native';
+import AnimatedPressable from './AnimatedPressable';
 
 interface PillProps {
     label: string;
@@ -12,44 +12,31 @@ interface PillProps {
 }
 
 const Pill = ({ label, onPress, primary, selected, dark, style }: PillProps) => {
-    const bg = primary || selected
-        ? primary ? colors.orange : colors.ink
-        : dark ? 'rgba(255,255,255,0.08)' : colors.paper;
-    const fg = primary || selected
-        ? colors.paper
-        : dark ? colors.paper : colors.ink;
-    const bd = primary || selected
-        ? 'transparent'
-        : dark ? 'rgba(255,255,255,0.12)' : colors.border;
+    const bgClass = primary
+        ? 'bg-orange border-orange'
+        : selected
+            ? 'bg-ink border-ink'
+            : dark
+                ? 'bg-white/10 border-white/15'
+                : 'bg-paper border-border';
+
+    const textClass = primary || selected
+        ? 'text-paper'
+        : dark
+            ? 'text-paper'
+            : 'text-ink';
 
     return (
-        <Pressable
+        <AnimatedPressable
             onPress={onPress}
-            style={[
-                styles.pill,
-                { backgroundColor: bg, borderColor: bd },
-                style,
-            ]}
+            className={`self-start rounded-pill border px-3.5 py-2 ${bgClass}`}
+            style={style}
         >
-            <Text style={[styles.label, { color: fg }]}>{label}</Text>
-        </Pressable>
+            <Text className={`font-ui text-[13px] font-semibold tracking-tight ${textClass}`}>
+                {label}
+            </Text>
+        </AnimatedPressable>
     );
 };
-
-const styles = StyleSheet.create({
-    pill: {
-        borderWidth: 1,
-        borderRadius: radius.pill,
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        alignSelf: 'flex-start',
-    },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        fontWeight: '600',
-        letterSpacing: -0.1,
-    },
-});
 
 export default Pill;

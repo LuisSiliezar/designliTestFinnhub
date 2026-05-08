@@ -1,10 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AppHeader, DishCard } from '@presentation/components/shared';
 import { useDishesByCategory } from '@presentation/hooks';
-import { colors, typography } from '@presentation/theme';
 
 const CategoryScreen = () => {
     const navigation = useNavigation<any>();
@@ -13,7 +13,7 @@ const CategoryScreen = () => {
     const { dishes, isLoading } = useDishesByCategory(category);
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader
                 title={category}
                 serif={false}
@@ -22,16 +22,29 @@ const CategoryScreen = () => {
                 rightIcons={[{ name: 'filter' }]}
             />
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <Text style={styles.eyebrow}>TOP IN CATEGORY</Text>
-                <Text style={styles.title}>The {category.toLowerCase()}{'\n'}you can't miss.</Text>
+            <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+                <Animated.View entering={FadeIn.duration(360)}>
+                    <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                        TOP IN CATEGORY
+                    </Text>
+                    <Text
+                        className="font-display text-ink mt-1 mb-4"
+                        style={{ fontSize: 30, lineHeight: 34, letterSpacing: -0.6 }}
+                    >
+                        The {category.toLowerCase()}{'\n'}you can't miss.
+                    </Text>
+                </Animated.View>
 
                 {isLoading ? (
-                    <ActivityIndicator color={colors.orange} style={styles.loader} />
+                    <ActivityIndicator color="#FF5B1F" style={{ marginTop: 40 }} />
                 ) : (
-                    <View style={styles.grid}>
-                        {dishes.map(d => (
-                            <View key={d.id} style={styles.cell}>
+                    <View className="flex-row flex-wrap -mx-2">
+                        {dishes.map((d, idx) => (
+                            <Animated.View
+                                key={d.id}
+                                entering={FadeInDown.delay(idx * 60).duration(320).springify()}
+                                className="w-1/2 p-2"
+                            >
                                 <DishCard
                                     id={d.id}
                                     name={d.name}
@@ -40,7 +53,7 @@ const CategoryScreen = () => {
                                     restaurantName={d.category}
                                     onPress={() => navigation.navigate('DishDetail', { id: d.id })}
                                 />
-                            </View>
+                            </Animated.View>
                         ))}
                     </View>
                 )}
@@ -48,36 +61,5 @@ const CategoryScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    scroll: { padding: 20, paddingBottom: 100 },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.5,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 30,
-        lineHeight: 34,
-        color: colors.ink,
-        letterSpacing: -0.6,
-        marginTop: 4,
-        marginBottom: 16,
-    },
-    loader: { marginTop: 40 },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginHorizontal: -8,
-    },
-    cell: {
-        width: '50%',
-        padding: 8,
-    },
-});
 
 export default CategoryScreen;

@@ -4,17 +4,19 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader, CTAButton } from '@presentation/components/shared';
-import { colors, radius, typography } from '@presentation/theme';
 import { useAuthStore } from '@core/store';
 import { MockDataService } from '@infrastructure/services';
+
+const FIELD_INPUT = 'bg-paper border border-border rounded-md px-4 py-3.5 font-ui text-[15px] text-ink';
+const LABEL = 'font-ui text-xs font-bold text-muted tracking-wide mb-1.5';
 
 const EditProfileScreen = () => {
     const navigation = useNavigation<any>();
@@ -25,51 +27,50 @@ const EditProfileScreen = () => {
     const [bio, setBio] = useState(user.bio ?? '');
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
-            <AppHeader
-                title="Edit profile"
-                serif={false}
-                showBack
-                onBack={() => navigation.goBack()}
-            />
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
+            <AppHeader title="Edit profile" serif={false} showBack onBack={() => navigation.goBack()} />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={styles.flex}
+                className="flex-1"
             >
-                <ScrollView contentContainerStyle={styles.scroll}>
-                    <View style={styles.avatarRow}>
-                        {user.avatar && <Image source={{ uri: user.avatar }} style={styles.avatar} />}
-                        <Text style={styles.changePhoto}>Change photo</Text>
+                <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+                    <Animated.View entering={FadeInDown.duration(360)} className="items-center mb-6">
+                        {user.avatar && (
+                            <Image
+                                source={{ uri: user.avatar }}
+                                className="w-24 h-24 rounded-full bg-warm-gray border-[3px] border-orange"
+                            />
+                        )}
+                        <Text className="font-ui text-[13px] font-bold text-orange mt-3">
+                            Change photo
+                        </Text>
+                    </Animated.View>
+
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Name</Text>
+                        <TextInput className={FIELD_INPUT} value={name} onChangeText={setName} />
                     </View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Name</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Handle</Text>
                         <TextInput
-                            style={styles.input}
-                            value={name}
-                            onChangeText={setName}
-                        />
-                    </View>
-
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Handle</Text>
-                        <TextInput
-                            style={styles.input}
+                            className={FIELD_INPUT}
                             value={handle}
                             onChangeText={setHandle}
                             autoCapitalize="none"
                         />
                     </View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Bio</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Bio</Text>
                         <TextInput
-                            style={[styles.input, styles.bio]}
+                            className={FIELD_INPUT}
                             value={bio}
                             onChangeText={setBio}
                             multiline
                             numberOfLines={4}
                             textAlignVertical="top"
+                            style={{ height: 110 }}
                         />
                     </View>
 
@@ -77,61 +78,12 @@ const EditProfileScreen = () => {
                         label="Save changes"
                         variant="primary"
                         onPress={() => navigation.goBack()}
-                        style={styles.cta}
+                        style={{ marginTop: 16 }}
                     />
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    flex: { flex: 1 },
-    scroll: { padding: 20, paddingBottom: 60 },
-    avatarRow: {
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    avatar: {
-        width: 96,
-        height: 96,
-        borderRadius: 48,
-        backgroundColor: colors.warmGray,
-        borderWidth: 3,
-        borderColor: colors.orange,
-    },
-    changePhoto: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        fontWeight: '700',
-        color: colors.orange,
-        marginTop: 12,
-    },
-    field: { marginBottom: 14 },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-        marginBottom: 6,
-    },
-    input: {
-        backgroundColor: colors.paper,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: radius.md,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    bio: {
-        height: 110,
-    },
-    cta: { marginTop: 16 },
-});
 
 export default EditProfileScreen;

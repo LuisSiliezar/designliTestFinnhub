@@ -1,6 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import {
     AppHeader,
@@ -11,7 +12,6 @@ import {
 } from '@presentation/components/shared';
 import CategoryList from '@presentation/components/lists/CategoryList';
 import { useCategories, useFeed } from '@presentation/hooks';
-import { colors, typography } from '@presentation/theme';
 
 const FILTERS = ['Following', 'Nearby', 'Trending', 'Under $20', 'Open now'];
 
@@ -22,7 +22,7 @@ const FeedScreen = () => {
     const [active, setActive] = React.useState('Following');
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader
                 title="Comelongo"
                 rightIcons={[
@@ -31,15 +31,18 @@ const FeedScreen = () => {
                 ]}
             />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-                <View style={styles.filters}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                <View className="flex-row gap-2 px-4 py-2 flex-wrap">
                     {FILTERS.map(f => (
                         <Pill
                             key={f}
                             label={f}
                             selected={active === f}
                             onPress={() => setActive(f)}
-                            style={styles.filterPill}
+                            style={{ marginRight: 4, marginBottom: 4 }}
                         />
                     ))}
                 </View>
@@ -54,12 +57,14 @@ const FeedScreen = () => {
 
                 <SectionHeader label="Latest from your circle" eyebrow />
                 {isLoading ? (
-                    <>
+                    <Animated.View entering={FadeIn.duration(200)}>
                         <SkeletonCard />
                         <SkeletonCard />
-                    </>
+                    </Animated.View>
                 ) : reviews.length === 0 ? (
-                    <Text style={styles.empty}>No reviews yet — pull to refresh.</Text>
+                    <Text className="text-center font-ui text-muted p-6">
+                        No reviews yet — pull to refresh.
+                    </Text>
                 ) : (
                     reviews.map(r => <ReviewCard key={r.id} review={r} />)
                 )}
@@ -67,24 +72,5 @@ const FeedScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    scroll: { paddingBottom: 100 },
-    filters: {
-        flexDirection: 'row',
-        gap: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        flexWrap: 'wrap',
-    },
-    filterPill: { marginRight: 4, marginBottom: 4 },
-    empty: {
-        textAlign: 'center',
-        fontFamily: typography.ui,
-        color: colors.textMuted,
-        padding: 24,
-    },
-});
 
 export default FeedScreen;

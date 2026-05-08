@@ -3,17 +3,29 @@ import {
     Image,
     KeyboardAvoidingView,
     Platform,
-    Pressable,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, {
+    FadeIn,
+    FadeInDown,
+    FadeOutUp,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { AppHeader, CTAButton, Icon, ScoreBadge } from '@presentation/components/shared';
-import { colors, radius, typography } from '@presentation/theme';
+import {
+    AnimatedPressable,
+    AnimatedScoreBadge,
+    AppHeader,
+    CTAButton,
+    Icon,
+} from '@presentation/components/shared';
 import { useReviewDraftStore, SocialPlatform } from '@core/store';
 
 const STEPS = ['Photo', 'Rate', 'Write', 'Share', 'Done'] as const;
@@ -25,24 +37,62 @@ const SOCIALS: { id: SocialPlatform; label: string }[] = [
     { id: 'x', label: 'X' },
 ];
 
+const FIELD_INPUT = 'bg-paper border border-border rounded-md px-4 py-3.5 font-ui text-[15px] text-ink';
+const LABEL = 'font-ui text-xs font-bold text-muted tracking-wide mb-1.5';
+
+const ProgressBar = ({ active }: { active: boolean }) => {
+    const progress = useSharedValue(active ? 1 : 0);
+    React.useEffect(() => {
+        progress.value = withTiming(active ? 1 : 0, { duration: 280 });
+    }, [active, progress]);
+    const style = useAnimatedStyle(() => ({
+        backgroundColor: progress.value > 0.5 ? '#FF5B1F' : '#EFEAE2',
+    }));
+    return <Animated.View style={style} className="flex-1 h-1 rounded-sm" />;
+};
+
+const SocialToggle = ({
+    label,
+    on,
+    onPress,
+}: { label: string; on: boolean; onPress: () => void }) => {
+    const offset = useSharedValue(on ? 18 : 0);
+    React.useEffect(() => {
+        offset.value = withSpring(on ? 18 : 0, { damping: 16, stiffness: 220 });
+    }, [on, offset]);
+    const knobStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: offset.value }],
+    }));
+
+    return (
+        <AnimatedPressable
+            onPress={onPress}
+            className={`flex-row items-center justify-between py-3.5 px-4 bg-paper rounded-md border ${on ? 'border-orange' : 'border-border'} mb-2`}
+        >
+            <Text className={`font-ui text-[15px] font-semibold ${on ? 'text-orange-deep' : 'text-ink'}`}>
+                {label}
+            </Text>
+            <View className={`w-11 h-[26px] rounded-[13px] p-[3px] ${on ? 'bg-orange' : 'bg-border'}`}>
+                <Animated.View style={knobStyle} className="w-5 h-5 rounded-full bg-paper" />
+            </View>
+        </AnimatedPressable>
+    );
+};
+
 const CreatePostScreen = () => {
     const navigation = useNavigation<any>();
     const draft = useReviewDraftStore();
     const [step, setStep] = useState<Step>('Photo');
-
     const stepIndex = STEPS.indexOf(step);
 
     const goNext = () => {
         const next = STEPS[stepIndex + 1];
         if (next) setStep(next);
     };
-
-    const submit = () => {
-        setStep('Done');
-    };
+    const submit = () => setStep('Done');
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader
                 title={`Step ${stepIndex + 1} of ${STEPS.length - 1}`}
                 serif={false}
@@ -54,171 +104,205 @@ const CreatePostScreen = () => {
                 rightIcons={[{ name: 'close', onPress: () => navigation.goBack() }]}
             />
 
-            <View style={styles.progress}>
+            <View className="flex-row gap-1 px-5 pb-3">
                 {STEPS.slice(0, -1).map((s, i) => (
-                    <View
-                        key={s}
-                        style={[styles.progressBar, i <= stepIndex && styles.progressActive]}
-                    />
+                    <ProgressBar key={s} active={i <= stepIndex} />
                 ))}
             </View>
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={styles.flex}
+                className="flex-1"
             >
-                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+                <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
                     {step === 'Photo' && (
-                        <View>
-                            <Text style={styles.eyebrow}>STEP 1 · CAPTURE</Text>
-                            <Text style={styles.title}>Snap the dish.</Text>
-                            <Text style={styles.body}>Take a photo or pick one from your library.</Text>
-
-                            <Pressable
-                                style={styles.photoSlot}
+                        <Animated.View entering={FadeInDown.duration(320)} exiting={FadeOutUp.duration(220)}>
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                                STEP 1 · CAPTURE
+                            </Text>
+                            <Text
+                                className="font-display text-ink mt-1 mb-3"
+                                style={{ fontSize: 32, lineHeight: 36, letterSpacing: -0.6 }}
+                            >
+                                Snap the dish.
+                            </Text>
+                            <Text className="font-ui text-[15px] leading-[22px] text-muted mb-4">
+                                Take a photo or pick one from your library.
+                            </Text>
+                            <AnimatedPressable
+                                className="h-80 rounded-lg bg-paper border border-border overflow-hidden"
                                 onPress={() => draft.setPhoto('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80')}
                             >
                                 {draft.photoUri ? (
-                                    <Image source={{ uri: draft.photoUri }} style={styles.photo} />
+                                    <Image source={{ uri: draft.photoUri }} className="w-full h-full" />
                                 ) : (
-                                    <View style={styles.photoEmpty}>
-                                        <Icon name="plus" size={36} color={colors.textMuted} />
-                                        <Text style={styles.photoLabel}>Tap to add a photo</Text>
+                                    <View className="flex-1 items-center justify-center gap-3">
+                                        <Icon name="plus" size={36} color="#6F675C" />
+                                        <Text className="font-ui text-sm text-muted">
+                                            Tap to add a photo
+                                        </Text>
                                     </View>
                                 )}
-                            </Pressable>
-                        </View>
+                            </AnimatedPressable>
+                        </Animated.View>
                     )}
 
                     {step === 'Rate' && (
-                        <View>
-                            <Text style={styles.eyebrow}>STEP 2 · RATE</Text>
-                            <Text style={styles.title}>How was it?</Text>
-                            <Text style={styles.body}>1 (avoid) to 10 (life-changing).</Text>
+                        <Animated.View entering={FadeInDown.duration(320)} exiting={FadeOutUp.duration(220)}>
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                                STEP 2 · RATE
+                            </Text>
+                            <Text
+                                className="font-display text-ink mt-1 mb-3"
+                                style={{ fontSize: 32, lineHeight: 36, letterSpacing: -0.6 }}
+                            >
+                                How was it?
+                            </Text>
+                            <Text className="font-ui text-[15px] leading-[22px] text-muted mb-4">
+                                1 (avoid) to 10 (life-changing).
+                            </Text>
 
-                            <View style={styles.scoreCenter}>
-                                <ScoreBadge score={draft.score} size={120} />
+                            <View className="items-center my-6">
+                                <AnimatedScoreBadge score={draft.score} size={120} />
                             </View>
 
-                            <View style={styles.scoreSlider}>
+                            <View className="flex-row gap-1 my-4 flex-wrap justify-center">
                                 {Array.from({ length: 10 }, (_, i) => i + 1).map(v => (
-                                    <Pressable
+                                    <AnimatedPressable
                                         key={v}
                                         onPress={() => draft.setScore(v)}
-                                        style={[
-                                            styles.scoreDot,
-                                            v <= draft.score && styles.scoreDotActive,
-                                        ]}
+                                        className={`w-[30px] h-[30px] rounded-full items-center justify-center border ${
+                                            v <= draft.score
+                                                ? 'bg-orange border-orange'
+                                                : 'bg-paper border-border'
+                                        }`}
                                     >
                                         <Text
-                                            style={[
-                                                styles.scoreDotLabel,
-                                                v <= draft.score && styles.scoreDotLabelActive,
-                                            ]}
+                                            className={`font-ui text-xs font-bold ${
+                                                v <= draft.score ? 'text-paper' : 'text-muted'
+                                            }`}
                                         >
                                             {v}
                                         </Text>
-                                    </Pressable>
+                                    </AnimatedPressable>
                                 ))}
                             </View>
 
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Dish name</Text>
+                            <View className="my-2">
+                                <Text className={LABEL}>Dish name</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    className={FIELD_INPUT}
                                     value={draft.dishName}
                                     onChangeText={draft.setDishName}
                                     placeholder="e.g. Smash burger"
-                                    placeholderTextColor={colors.textSubtle}
+                                    placeholderTextColor="#A39B8E"
                                 />
                             </View>
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Restaurant</Text>
+                            <View className="my-2">
+                                <Text className={LABEL}>Restaurant</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    className={FIELD_INPUT}
                                     value={draft.restaurantName}
                                     onChangeText={draft.setRestaurantName}
                                     placeholder="e.g. Block Burger"
-                                    placeholderTextColor={colors.textSubtle}
+                                    placeholderTextColor="#A39B8E"
                                 />
                             </View>
-                        </View>
+                        </Animated.View>
                     )}
 
                     {step === 'Write' && (
-                        <View>
-                            <Text style={styles.eyebrow}>STEP 3 · WRITE</Text>
-                            <Text style={styles.title}>Say something{'\n'}<Text style={styles.italic}>worth saying</Text>.</Text>
+                        <Animated.View entering={FadeInDown.duration(320)} exiting={FadeOutUp.duration(220)}>
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                                STEP 3 · WRITE
+                            </Text>
+                            <Text
+                                className="font-display text-ink mt-1 mb-3"
+                                style={{ fontSize: 32, lineHeight: 36, letterSpacing: -0.6 }}
+                            >
+                                Say something{'\n'}
+                                <Text className="italic text-orange">worth saying</Text>.
+                            </Text>
                             <TextInput
-                                style={[styles.input, styles.note]}
+                                className={`${FIELD_INPUT} my-2`}
+                                style={{ height: 160 }}
                                 value={draft.note}
                                 onChangeText={draft.setNote}
                                 placeholder="What did you love? What missed?"
-                                placeholderTextColor={colors.textSubtle}
+                                placeholderTextColor="#A39B8E"
                                 multiline
                                 textAlignVertical="top"
                             />
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Location</Text>
-                                <View style={styles.locationRow}>
-                                    <Icon name="location" size={16} color={colors.textMuted} />
+                            <View className="my-2">
+                                <Text className={LABEL}>Location</Text>
+                                <View className="flex-row items-center gap-2 bg-paper border border-border rounded-md px-3.5">
+                                    <Icon name="location" size={16} color="#6F675C" />
                                     <TextInput
-                                        style={styles.locationInput}
+                                        className="flex-1 py-3.5 font-ui text-[15px] text-ink"
                                         value={draft.location}
                                         onChangeText={draft.setLocation}
                                         placeholder="Brooklyn, NY"
-                                        placeholderTextColor={colors.textSubtle}
+                                        placeholderTextColor="#A39B8E"
                                     />
                                 </View>
                             </View>
-                        </View>
+                        </Animated.View>
                     )}
 
                     {step === 'Share' && (
-                        <View>
-                            <Text style={styles.eyebrow}>STEP 4 · SHARE</Text>
-                            <Text style={styles.title}>Take it{'\n'}<Text style={styles.italic}>public</Text>?</Text>
-                            <Text style={styles.body}>
+                        <Animated.View entering={FadeInDown.duration(320)} exiting={FadeOutUp.duration(220)}>
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                                STEP 4 · SHARE
+                            </Text>
+                            <Text
+                                className="font-display text-ink mt-1 mb-3"
+                                style={{ fontSize: 32, lineHeight: 36, letterSpacing: -0.6 }}
+                            >
+                                Take it{'\n'}
+                                <Text className="italic text-orange">public</Text>?
+                            </Text>
+                            <Text className="font-ui text-[15px] leading-[22px] text-muted mb-4">
                                 We'll post the photo and score to Comelongo. Pick where else to share.
                             </Text>
-                            <View style={styles.shareList}>
-                                {SOCIALS.map(s => {
-                                    const isOn = draft.sharedTo.includes(s.id);
-                                    return (
-                                        <Pressable
-                                            key={s.id}
-                                            onPress={() => draft.toggleShare(s.id)}
-                                            style={[styles.shareRow, isOn && styles.shareRowOn]}
-                                        >
-                                            <Text style={[styles.shareLabel, isOn && styles.shareLabelOn]}>
-                                                {s.label}
-                                            </Text>
-                                            <View style={[styles.toggle, isOn && styles.toggleOn]}>
-                                                <View style={[styles.knob, isOn && styles.knobOn]} />
-                                            </View>
-                                        </Pressable>
-                                    );
-                                })}
+                            <View className="mt-3">
+                                {SOCIALS.map(s => (
+                                    <SocialToggle
+                                        key={s.id}
+                                        label={s.label}
+                                        on={draft.sharedTo.includes(s.id)}
+                                        onPress={() => draft.toggleShare(s.id)}
+                                    />
+                                ))}
                             </View>
-                        </View>
+                        </Animated.View>
                     )}
 
                     {step === 'Done' && (
-                        <View style={styles.doneWrap}>
-                            <View style={styles.doneCircle}>
-                                <Icon name="star" size={36} color={colors.paper} />
-                            </View>
-                            <Text style={styles.title}>Posted.</Text>
-                            <Text style={styles.body}>
-                                Your review is live on Comelongo
-                                {draft.sharedTo.length > 0 ? ` and shared to ${draft.sharedTo.join(', ')}.` : '.'}
+                        <Animated.View entering={FadeIn.duration(420)} className="items-center py-10">
+                            <Animated.View
+                                entering={FadeIn.duration(400)}
+                                className="w-[88px] h-[88px] rounded-full bg-orange items-center justify-center mb-6"
+                            >
+                                <Icon name="star" size={36} color="#FFFFFF" />
+                            </Animated.View>
+                            <Text
+                                className="font-display text-ink"
+                                style={{ fontSize: 32, letterSpacing: -0.6 }}
+                            >
+                                Posted.
                             </Text>
-                        </View>
+                            <Text className="font-ui text-[15px] leading-[22px] text-muted mt-3 text-center">
+                                Your review is live on Comelongo
+                                {draft.sharedTo.length > 0
+                                    ? ` and shared to ${draft.sharedTo.join(', ')}.`
+                                    : '.'}
+                            </Text>
+                        </Animated.View>
                     )}
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            <View style={styles.footer}>
+            <View className="p-4 bg-cream border-t border-border">
                 {step === 'Done' ? (
                     <CTAButton
                         label="Done"
@@ -237,182 +321,5 @@ const CreatePostScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    flex: { flex: 1 },
-    scroll: { padding: 20, paddingBottom: 60 },
-    progress: {
-        flexDirection: 'row',
-        gap: 4,
-        paddingHorizontal: 20,
-        paddingBottom: 12,
-    },
-    progressBar: {
-        flex: 1,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: colors.border,
-    },
-    progressActive: { backgroundColor: colors.orange },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.5,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 32,
-        lineHeight: 36,
-        color: colors.ink,
-        marginTop: 4,
-        marginBottom: 12,
-        letterSpacing: -0.6,
-    },
-    italic: { fontStyle: 'italic', color: colors.orange },
-    body: {
-        fontFamily: typography.ui,
-        fontSize: 15,
-        lineHeight: 22,
-        color: colors.textMuted,
-        marginBottom: 16,
-    },
-    photoSlot: {
-        height: 320,
-        borderRadius: radius.lg,
-        backgroundColor: colors.paper,
-        borderWidth: 1,
-        borderColor: colors.border,
-        overflow: 'hidden',
-    },
-    photo: { width: '100%', height: '100%' },
-    photoEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-    photoLabel: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        color: colors.textMuted,
-    },
-    scoreCenter: { alignItems: 'center', marginVertical: 24 },
-    scoreSlider: {
-        flexDirection: 'row',
-        gap: 4,
-        marginVertical: 16,
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-    },
-    scoreDot: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: colors.paper,
-        borderWidth: 1,
-        borderColor: colors.border,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    scoreDotActive: {
-        backgroundColor: colors.orange,
-        borderColor: colors.orange,
-    },
-    scoreDotLabel: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        fontWeight: '700',
-        color: colors.textMuted,
-    },
-    scoreDotLabelActive: { color: colors.paper },
-    field: { marginVertical: 8 },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-        marginBottom: 6,
-    },
-    input: {
-        backgroundColor: colors.paper,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: radius.md,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    note: { height: 160, marginVertical: 8 },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        backgroundColor: colors.paper,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: radius.md,
-        paddingHorizontal: 14,
-    },
-    locationInput: {
-        flex: 1,
-        paddingVertical: 14,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    shareList: { marginTop: 12 },
-    shareRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        backgroundColor: colors.paper,
-        borderRadius: radius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginBottom: 8,
-    },
-    shareRowOn: { borderColor: colors.orange },
-    shareLabel: {
-        fontFamily: typography.ui,
-        fontSize: 15,
-        fontWeight: '600',
-        color: colors.ink,
-    },
-    shareLabelOn: { color: colors.orangeDeep },
-    toggle: {
-        width: 44,
-        height: 26,
-        borderRadius: 13,
-        backgroundColor: colors.border,
-        padding: 3,
-    },
-    toggleOn: { backgroundColor: colors.orange },
-    knob: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: colors.paper,
-    },
-    knobOn: { transform: [{ translateX: 18 }] },
-    doneWrap: { alignItems: 'center', paddingVertical: 40 },
-    doneCircle: {
-        width: 88,
-        height: 88,
-        borderRadius: 44,
-        backgroundColor: colors.orange,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 24,
-    },
-    footer: {
-        padding: 16,
-        backgroundColor: colors.cream,
-        borderTopWidth: 1,
-        borderColor: colors.border,
-    },
-});
 
 export default CreatePostScreen;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '@presentation/theme';
+import { Text, View } from 'react-native';
+import AnimatedPressable from './AnimatedPressable';
 
 interface Props {
     label: string;
@@ -10,52 +10,25 @@ interface Props {
     serif?: boolean;
 }
 
-const SectionHeader = ({ label, actionLabel, onAction, eyebrow, serif }: Props) => (
-    <View style={styles.row}>
-        <Text style={[styles.label, eyebrow && styles.eyebrow, serif && styles.serif]}>
-            {eyebrow ? label.toUpperCase() : label}
-        </Text>
-        {actionLabel && (
-            <Pressable onPress={onAction} hitSlop={8}>
-                <Text style={styles.action}>{actionLabel}</Text>
-            </Pressable>
-        )}
-    </View>
-);
+const SectionHeader = ({ label, actionLabel, onAction, eyebrow, serif }: Props) => {
+    let labelClass = 'font-ui text-base font-bold text-ink tracking-tight';
+    if (eyebrow) labelClass = 'font-ui text-[13px] font-bold text-muted tracking-wider';
+    if (serif) labelClass = 'font-display text-[22px] text-ink tracking-tighter';
 
-const styles = StyleSheet.create({
-    row: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 16,
-        fontWeight: '700',
-        color: colors.ink,
-        letterSpacing: -0.2,
-    },
-    eyebrow: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-    },
-    serif: {
-        fontFamily: typography.display,
-        fontSize: 22,
-        fontWeight: '400',
-        letterSpacing: -0.4,
-    },
-    action: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        fontWeight: '700',
-        color: colors.orange,
-    },
-});
+    return (
+        <View className="flex-row items-baseline justify-between px-5 py-2.5">
+            <Text className={labelClass}>
+                {eyebrow ? label.toUpperCase() : label}
+            </Text>
+            {actionLabel && (
+                <AnimatedPressable onPress={onAction}>
+                    <Text className="font-ui text-[13px] font-bold text-orange">
+                        {actionLabel}
+                    </Text>
+                </AnimatedPressable>
+            )}
+        </View>
+    );
+};
 
 export default SectionHeader;

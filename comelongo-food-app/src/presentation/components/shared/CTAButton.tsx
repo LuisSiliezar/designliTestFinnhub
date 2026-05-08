@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
-import { colors, radius, typography } from '@presentation/theme';
+import { Text, ViewStyle } from 'react-native';
+import AnimatedPressable from './AnimatedPressable';
 
 type Variant = 'primary' | 'orange' | 'ghost' | 'light';
 
@@ -12,49 +12,31 @@ interface CTAButtonProps {
     disabled?: boolean;
 }
 
-const VARIANTS: Record<Variant, { bg: string; fg: string; border?: string }> = {
-    primary: { bg: colors.ink, fg: colors.paper },
-    orange: { bg: colors.orange, fg: colors.paper },
-    ghost: { bg: 'transparent', fg: colors.ink, border: colors.ink },
-    light: { bg: colors.paper, fg: colors.ink, border: colors.border },
+const VARIANT_BG: Record<Variant, string> = {
+    primary: 'bg-ink',
+    orange: 'bg-orange',
+    ghost: 'bg-transparent border-[1.5px] border-ink',
+    light: 'bg-paper border border-border',
 };
 
-const CTAButton = ({ label, onPress, variant = 'primary', style, disabled }: CTAButtonProps) => {
-    const v = VARIANTS[variant];
-    return (
-        <Pressable
-            onPress={onPress}
-            disabled={disabled}
-            style={[
-                styles.button,
-                {
-                    backgroundColor: v.bg,
-                    borderColor: v.border ?? 'transparent',
-                    borderWidth: v.border ? 1.5 : 0,
-                    opacity: disabled ? 0.5 : 1,
-                },
-                style,
-            ]}
-        >
-            <Text style={[styles.label, { color: v.fg }]}>{label}</Text>
-        </Pressable>
-    );
+const VARIANT_TEXT: Record<Variant, string> = {
+    primary: 'text-paper',
+    orange: 'text-paper',
+    ghost: 'text-ink',
+    light: 'text-ink',
 };
 
-const styles = StyleSheet.create({
-    button: {
-        height: 56,
-        borderRadius: radius.pill,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-    },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 16,
-        fontWeight: '700',
-        letterSpacing: -0.2,
-    },
-});
+const CTAButton = ({ label, onPress, variant = 'primary', style, disabled }: CTAButtonProps) => (
+    <AnimatedPressable
+        onPress={onPress}
+        disabled={disabled}
+        className={`h-14 rounded-pill items-center justify-center px-6 ${VARIANT_BG[variant]} ${disabled ? 'opacity-50' : ''}`}
+        style={style}
+    >
+        <Text className={`font-ui text-base font-bold tracking-tight ${VARIANT_TEXT[variant]}`}>
+            {label}
+        </Text>
+    </AnimatedPressable>
+);
 
 export default CTAButton;

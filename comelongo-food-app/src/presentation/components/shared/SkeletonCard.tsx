@@ -1,40 +1,40 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { colors, radius } from '@presentation/theme';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+    Easing,
+} from 'react-native-reanimated';
+
+const Shimmer = ({ className = '' }: { className?: string }) => {
+    const opacity = useSharedValue(0.55);
+
+    useEffect(() => {
+        opacity.value = withRepeat(
+            withTiming(1, { duration: 850, easing: Easing.inOut(Easing.ease) }),
+            -1,
+            true,
+        );
+    }, [opacity]);
+
+    const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+    return (
+        <Animated.View
+            style={style}
+            className={`bg-warm-gray ${className}`}
+        />
+    );
+};
 
 const SkeletonCard = () => (
-    <View style={styles.card}>
-        <View style={styles.image} />
-        <View style={styles.line} />
-        <View style={[styles.line, styles.lineShort]} />
+    <View className="bg-paper rounded-lg border border-border mx-4 my-2 p-3.5">
+        <Shimmer className="h-52 rounded-md mb-3" />
+        <Shimmer className="h-3 rounded-md my-1" />
+        <Shimmer className="h-3 rounded-md my-1 w-1/2" />
     </View>
 );
-
-const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.paper,
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
-        marginHorizontal: 16,
-        marginVertical: 8,
-        padding: 14,
-    },
-    image: {
-        height: 200,
-        backgroundColor: colors.warmGray,
-        borderRadius: radius.md,
-        marginBottom: 12,
-    },
-    line: {
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: colors.warmGray,
-        marginVertical: 4,
-    },
-    lineShort: {
-        width: '50%',
-    },
-});
 
 export default SkeletonCard;

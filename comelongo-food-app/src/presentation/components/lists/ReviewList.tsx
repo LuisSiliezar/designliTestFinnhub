@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList } from 'react-native';
 import ReviewCard from '@presentation/components/shared/ReviewCard';
 import type { Review } from '@domain/entities';
 
@@ -15,15 +15,9 @@ const ReviewList = ({ reviews, ListHeaderComponent }: Props) => (
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ReviewCard review={item} />}
         ListHeaderComponent={ListHeaderComponent}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
     />
 );
-
-const styles = StyleSheet.create({
-    list: {
-        paddingBottom: 120,
-    },
-});
 
 export default ReviewList;

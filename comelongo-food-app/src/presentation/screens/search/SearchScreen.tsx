@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
-import {
-    FlatList,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
-} from 'react-native';
+import { FlatList, Image, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { AppHeader, Icon, ScoreBadge } from '@presentation/components/shared';
+import {
+    AnimatedPressable,
+    AppHeader,
+    Icon,
+    ScoreBadge,
+} from '@presentation/components/shared';
 import { useSearchDishes } from '@presentation/hooks';
-import { colors, radius, typography } from '@presentation/theme';
 
 const SUGGESTIONS = ['Pizza margherita', 'Smash burger', 'Tacos al pastor', 'Ramen tonkotsu', 'Pad thai'];
 
@@ -22,63 +19,78 @@ const SearchScreen = () => {
     const { results, isLoading } = useSearchDishes(query);
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader title="Search" serif={false} showBack onBack={() => navigation.goBack()} />
 
-            <View style={styles.searchWrap}>
-                <Icon name="search" size={18} color={colors.textMuted} />
+            <View className="flex-row items-center gap-2.5 bg-paper mx-4 my-2 px-3.5 py-3 rounded-md border border-border">
+                <Icon name="search" size={18} color="#6F675C" />
                 <TextInput
-                    style={styles.input}
+                    className="flex-1 font-ui text-[15px] text-ink p-0"
                     value={query}
                     onChangeText={setQuery}
                     placeholder="Dishes, restaurants, places…"
-                    placeholderTextColor={colors.textSubtle}
+                    placeholderTextColor="#A39B8E"
                     autoFocus
                     returnKeyType="search"
                 />
                 {query.length > 0 && (
-                    <Pressable onPress={() => setQuery('')} hitSlop={8}>
-                        <Icon name="close" size={18} color={colors.textMuted} />
-                    </Pressable>
+                    <AnimatedPressable onPress={() => setQuery('')}>
+                        <Icon name="close" size={18} color="#6F675C" />
+                    </AnimatedPressable>
                 )}
             </View>
 
             {query.length === 0 ? (
-                <View style={styles.suggestionsWrap}>
-                    <Text style={styles.suggestionsTitle}>TRENDING SEARCHES</Text>
-                    {SUGGESTIONS.map(s => (
-                        <Pressable
+                <Animated.View entering={FadeIn.duration(280)} className="p-4">
+                    <Text className="font-ui text-[11px] font-bold text-muted tracking-wider mb-3">
+                        TRENDING SEARCHES
+                    </Text>
+                    {SUGGESTIONS.map((s, i) => (
+                        <Animated.View
                             key={s}
-                            onPress={() => setQuery(s)}
-                            style={styles.suggestionRow}
+                            entering={FadeInDown.delay(i * 60).duration(280)}
                         >
-                            <Icon name="fire" size={18} color={colors.orange} />
-                            <Text style={styles.suggestionText}>{s}</Text>
-                            <Icon name="arrow-right" size={16} color={colors.textSubtle} />
-                        </Pressable>
+                            <AnimatedPressable
+                                onPress={() => setQuery(s)}
+                                className="flex-row items-center gap-3 py-3 border-b border-border"
+                            >
+                                <Icon name="fire" size={18} color="#FF5B1F" />
+                                <Text className="flex-1 font-ui text-[15px] text-ink">{s}</Text>
+                                <Icon name="arrow-right" size={16} color="#A39B8E" />
+                            </AnimatedPressable>
+                        </Animated.View>
                     ))}
-                </View>
+                </Animated.View>
             ) : (
                 <FlatList
                     data={results}
                     keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <Pressable
-                            style={styles.resultRow}
-                            onPress={() => navigation.navigate('DishDetail', { id: item.id })}
-                        >
-                            <Image source={{ uri: item.image }} style={styles.resultImage} />
-                            <View style={styles.resultBody}>
-                                <Text style={styles.resultTitle} numberOfLines={1}>{item.name}</Text>
-                                <Text style={styles.resultMeta} numberOfLines={1}>{item.category}</Text>
-                            </View>
-                            {typeof item.score === 'number' && (
-                                <ScoreBadge score={item.score} size={42} showLabel={false} />
-                            )}
-                        </Pressable>
+                    renderItem={({ item, index }) => (
+                        <Animated.View entering={FadeInDown.delay(index * 40).duration(260)}>
+                            <AnimatedPressable
+                                className="flex-row items-center gap-3 p-3 mx-4 my-1 bg-paper rounded-md border border-border"
+                                onPress={() => navigation.navigate('DishDetail', { id: item.id })}
+                            >
+                                <Image
+                                    source={{ uri: item.image }}
+                                    className="w-14 h-14 rounded-sm bg-warm-gray"
+                                />
+                                <View className="flex-1">
+                                    <Text className="font-ui text-[15px] font-bold text-ink" numberOfLines={1}>
+                                        {item.name}
+                                    </Text>
+                                    <Text className="font-ui text-xs text-muted mt-0.5" numberOfLines={1}>
+                                        {item.category}
+                                    </Text>
+                                </View>
+                                {typeof item.score === 'number' && (
+                                    <ScoreBadge score={item.score} size={42} showLabel={false} />
+                                )}
+                            </AnimatedPressable>
+                        </Animated.View>
                     )}
                     ListEmptyComponent={
-                        <Text style={styles.empty}>
+                        <Text className="text-center font-ui text-muted p-6">
                             {isLoading ? 'Searching…' : 'No matches yet.'}
                         </Text>
                     }
@@ -87,89 +99,5 @@ const SearchScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    searchWrap: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        backgroundColor: colors.paper,
-        marginHorizontal: 16,
-        marginVertical: 8,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        borderRadius: radius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    input: {
-        flex: 1,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-        paddingVertical: 0,
-    },
-    suggestionsWrap: { padding: 16 },
-    suggestionsTitle: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 1.2,
-        marginBottom: 12,
-    },
-    suggestionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderColor: colors.border,
-    },
-    suggestionText: {
-        flex: 1,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    resultRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        padding: 12,
-        marginHorizontal: 16,
-        marginVertical: 4,
-        backgroundColor: colors.paper,
-        borderRadius: radius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    resultImage: {
-        width: 56,
-        height: 56,
-        borderRadius: radius.sm,
-        backgroundColor: colors.warmGray,
-    },
-    resultBody: { flex: 1 },
-    resultTitle: {
-        fontFamily: typography.ui,
-        fontSize: 15,
-        fontWeight: '700',
-        color: colors.ink,
-    },
-    resultMeta: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        color: colors.textMuted,
-        marginTop: 2,
-    },
-    empty: {
-        textAlign: 'center',
-        fontFamily: typography.ui,
-        color: colors.textMuted,
-        padding: 24,
-    },
-});
 
 export default SearchScreen;

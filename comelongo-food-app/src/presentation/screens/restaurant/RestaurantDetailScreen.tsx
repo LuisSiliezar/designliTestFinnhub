@@ -1,73 +1,119 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { CTAButton, Icon, ScoreBadge } from '@presentation/components/shared';
-import { colors, radius, typography } from '@presentation/theme';
+import {
+    AnimatedPressable,
+    CTAButton,
+    Icon,
+    ScoreBadge,
+} from '@presentation/components/shared';
 import { MockDataService } from '@infrastructure/services';
 
 const RestaurantDetailScreen = () => {
     const navigation = useNavigation<any>();
     const { params } = useRoute<any>();
     const id: string = params?.id ?? 'rest-1';
-    const restaurant = MockDataService.restaurantForDish(id, 'Specialty', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80');
+    const restaurant = MockDataService.restaurantForDish(
+        id,
+        'Specialty',
+        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80',
+    );
 
     return (
-        <View style={styles.flex}>
+        <View className="flex-1 bg-cream">
             <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.heroWrap}>
+                <View style={{ height: 280 }}>
                     {restaurant.coverImage && (
-                        <Image source={{ uri: restaurant.coverImage }} style={styles.hero} />
+                        <Animated.Image
+                            entering={FadeIn.duration(320)}
+                            source={{ uri: restaurant.coverImage }}
+                            className="w-full h-full bg-warm-gray"
+                        />
                     )}
-                    <SafeAreaView edges={['top']} style={styles.heroOverlay}>
-                        <View style={styles.heroBar}>
-                            <Icon name="chevron-left" size={20} color={colors.paper} />
+                    <SafeAreaView edges={['top']} className="absolute top-0 left-0 right-0">
+                        <View className="p-4">
+                            <AnimatedPressable
+                                onPress={() => navigation.goBack()}
+                                className="w-10 h-10 rounded-full bg-black/45 items-center justify-center"
+                            >
+                                <Icon name="chevron-left" size={20} color="#FFFFFF" />
+                            </AnimatedPressable>
                         </View>
                     </SafeAreaView>
                 </View>
 
-                <View style={styles.body}>
-                    <View style={styles.titleRow}>
-                        <View style={styles.flex}>
-                            <Text style={styles.eyebrow}>{restaurant.category?.toUpperCase()}</Text>
-                            <Text style={styles.title}>{restaurant.name}</Text>
-                            <Text style={styles.subtitle}>{restaurant.address}</Text>
+                <Animated.View
+                    entering={FadeInUp.duration(420).springify()}
+                    className="p-5 -mt-7 bg-cream rounded-t-[28px]"
+                >
+                    <View className="flex-row gap-3 items-start">
+                        <View className="flex-1">
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                                {restaurant.category?.toUpperCase()}
+                            </Text>
+                            <Text
+                                className="font-display text-ink mt-1"
+                                style={{ fontSize: 30, lineHeight: 34, letterSpacing: -0.6 }}
+                            >
+                                {restaurant.name}
+                            </Text>
+                            <Text className="font-ui text-sm text-muted mt-1">
+                                {restaurant.address}
+                            </Text>
                         </View>
                         {typeof restaurant.averageScore === 'number' && (
                             <ScoreBadge score={restaurant.averageScore} size={64} />
                         )}
                     </View>
 
-                    <View style={styles.metaRow}>
-                        <View style={styles.metaItem}>
-                            <Icon name="location" size={16} color={colors.textMuted} />
-                            <Text style={styles.metaText}>{restaurant.city}</Text>
+                    <View className="flex-row gap-4 mt-4">
+                        <View className="flex-row gap-1.5 items-center">
+                            <Icon name="location" size={16} color="#6F675C" />
+                            <Text className="font-ui text-[13px] text-muted">{restaurant.city}</Text>
                         </View>
-                        <View style={styles.metaItem}>
-                            <Icon name="fire" size={16} color={colors.orange} />
-                            <Text style={styles.metaText}>{restaurant.reviewsCount} reviews</Text>
+                        <View className="flex-row gap-1.5 items-center">
+                            <Icon name="fire" size={16} color="#FF5B1F" />
+                            <Text className="font-ui text-[13px] text-muted">
+                                {restaurant.reviewsCount} reviews
+                            </Text>
                         </View>
                     </View>
 
-                    <Text style={styles.sectionTitle}>Hours</Text>
-                    <Text style={styles.body14}>{restaurant.hours}</Text>
-                    <Text style={[styles.body14, { color: restaurant.isOpenNow ? colors.green : colors.textMuted }]}>
+                    <Text className="font-display text-xl text-ink mt-6 mb-2 tracking-tight">
+                        Hours
+                    </Text>
+                    <Text className="font-ui text-sm text-ink-soft leading-5">
+                        {restaurant.hours}
+                    </Text>
+                    <Text
+                        className={`font-ui text-sm leading-5 ${restaurant.isOpenNow ? 'text-green' : 'text-muted'}`}
+                    >
                         {restaurant.isOpenNow ? '● Open now' : 'Closed'}
                     </Text>
 
-                    <Text style={styles.sectionTitle}>Top dishes</Text>
-                    <View style={styles.dishGrid}>
-                        {[1, 2, 3, 4].map(i => (
-                            <View key={i} style={styles.dishCell}>
-                                <View style={styles.dishImage} />
-                                <Text style={styles.dishName}>Dish #{i}</Text>
-                            </View>
+                    <Text className="font-display text-xl text-ink mt-6 mb-2 tracking-tight">
+                        Top dishes
+                    </Text>
+                    <View className="flex-row flex-wrap -mx-1.5 mt-2">
+                        {[1, 2, 3, 4].map((i, idx) => (
+                            <Animated.View
+                                key={i}
+                                entering={FadeInDown.delay(idx * 80).duration(320)}
+                                className="w-1/2 p-1.5"
+                            >
+                                <View className="w-full aspect-square bg-warm-gray rounded-md" />
+                                <Text className="font-ui text-[13px] font-semibold text-ink mt-1.5">
+                                    Dish #{i}
+                                </Text>
+                            </Animated.View>
                         ))}
                     </View>
-                </View>
+                </Animated.View>
             </ScrollView>
 
-            <View style={styles.bottomBar}>
+            <View className="p-4 bg-cream border-t border-border">
                 <CTAButton
                     label="Add a review"
                     variant="primary"
@@ -77,104 +123,5 @@ const RestaurantDetailScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    flex: { flex: 1, backgroundColor: colors.cream },
-    heroWrap: { height: 280 },
-    hero: { width: '100%', height: '100%', backgroundColor: colors.warmGray },
-    heroOverlay: { position: 'absolute', top: 0, left: 0, right: 0 },
-    heroBar: { padding: 16 },
-    body: {
-        padding: 20,
-        marginTop: -28,
-        backgroundColor: colors.cream,
-        borderTopLeftRadius: 28,
-        borderTopRightRadius: 28,
-    },
-    titleRow: {
-        flexDirection: 'row',
-        gap: 12,
-        alignItems: 'flex-start',
-    },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.2,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 30,
-        lineHeight: 34,
-        color: colors.ink,
-        marginTop: 4,
-        letterSpacing: -0.6,
-    },
-    subtitle: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        color: colors.textMuted,
-        marginTop: 4,
-    },
-    metaRow: {
-        flexDirection: 'row',
-        gap: 16,
-        marginTop: 16,
-    },
-    metaItem: {
-        flexDirection: 'row',
-        gap: 6,
-        alignItems: 'center',
-    },
-    metaText: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        color: colors.textMuted,
-    },
-    sectionTitle: {
-        fontFamily: typography.display,
-        fontSize: 20,
-        color: colors.ink,
-        marginTop: 24,
-        marginBottom: 8,
-        letterSpacing: -0.3,
-    },
-    body14: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        color: colors.inkSoft,
-        lineHeight: 20,
-    },
-    dishGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginHorizontal: -6,
-        marginTop: 8,
-    },
-    dishCell: {
-        width: '50%',
-        padding: 6,
-    },
-    dishImage: {
-        width: '100%',
-        aspectRatio: 1,
-        backgroundColor: colors.warmGray,
-        borderRadius: radius.md,
-    },
-    dishName: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        fontWeight: '600',
-        color: colors.ink,
-        marginTop: 6,
-    },
-    bottomBar: {
-        padding: 16,
-        backgroundColor: colors.cream,
-        borderTopWidth: 1,
-        borderColor: colors.border,
-    },
-});
 
 export default RestaurantDetailScreen;

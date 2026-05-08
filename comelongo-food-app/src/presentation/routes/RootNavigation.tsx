@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import AuthStack from './AuthStack';
 import AppTabs from './AppTabs';
 import DishDetailScreen from '@presentation/screens/dish/DishDetailScreen';
@@ -10,6 +10,13 @@ import EditProfileScreen from '@presentation/screens/profile/EditProfileScreen';
 import SettingsScreen from '@presentation/screens/settings/SettingsScreen';
 import AboutScreen from '@presentation/screens/settings/AboutScreen';
 import { useAuthStore } from '@core/store';
+import {
+    fadeTransitionSpec,
+    fadeUp,
+    modalSlideUp,
+    slideFadeFromRight,
+    transitionSpec,
+} from './transitions';
 
 export type RootStackParams = {
     Auth: undefined;
@@ -33,20 +40,36 @@ const RootNavigation = () => {
             screenOptions={{
                 headerShown: false,
                 cardStyle: { backgroundColor: '#FAF6F1' },
+                cardStyleInterpolator: slideFadeFromRight,
+                transitionSpec,
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
             }}
         >
             {!isAuthed ? (
-                <Stack.Screen name="Auth" component={AuthStack} />
+                <Stack.Screen
+                    name="Auth"
+                    component={AuthStack}
+                    options={{ cardStyleInterpolator: fadeUp, transitionSpec: fadeTransitionSpec }}
+                />
             ) : (
                 <>
-                    <Stack.Screen name="AppTabs" component={AppTabs} />
+                    <Stack.Screen
+                        name="AppTabs"
+                        component={AppTabs}
+                        options={{ cardStyleInterpolator: fadeUp, transitionSpec: fadeTransitionSpec }}
+                    />
                     <Stack.Screen name="DishDetail" component={DishDetailScreen} />
                     <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
                     <Stack.Screen name="Category" component={CategoryScreen} />
                     <Stack.Screen
                         name="CreatePost"
                         component={CreatePostScreen}
-                        options={{ presentation: 'modal' }}
+                        options={{
+                            ...TransitionPresets.ModalSlideFromBottomIOS,
+                            cardStyleInterpolator: modalSlideUp,
+                            gestureDirection: 'vertical',
+                        }}
                     />
                     <Stack.Screen name="EditProfile" component={EditProfileScreen} />
                     <Stack.Screen name="Settings" component={SettingsScreen} />

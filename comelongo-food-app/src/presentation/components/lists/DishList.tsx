@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import DishCard from '@presentation/components/shared/DishCard';
 import type { Dish } from '@domain/entities';
 
@@ -14,8 +15,11 @@ const DishList = ({ dishes, onPressDish, horizontal, ListHeaderComponent }: Prop
     <FlatList
         data={dishes}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-            <View style={horizontal ? styles.horizontalItem : styles.verticalItem}>
+        renderItem={({ item, index }) => (
+            <Animated.View
+                entering={FadeInDown.delay(index * 60).duration(360).springify()}
+                className={horizontal ? 'w-[220px] mr-3' : 'my-2'}
+            >
                 <DishCard
                     id={item.id}
                     name={item.name}
@@ -25,21 +29,18 @@ const DishList = ({ dishes, onPressDish, horizontal, ListHeaderComponent }: Prop
                     city={item.city}
                     onPress={() => onPressDish?.(item)}
                 />
-            </View>
+            </Animated.View>
         )}
         horizontal={horizontal}
         ListHeaderComponent={ListHeaderComponent}
-        contentContainerStyle={horizontal ? styles.horizontalList : styles.verticalList}
+        contentContainerStyle={
+            horizontal
+                ? { paddingHorizontal: 16, gap: 12 }
+                : { paddingHorizontal: 16, paddingBottom: 120 }
+        }
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
     />
 );
-
-const styles = StyleSheet.create({
-    verticalList: { paddingBottom: 120, paddingHorizontal: 16 },
-    horizontalList: { paddingHorizontal: 16, gap: 12 },
-    verticalItem: { marginVertical: 8 },
-    horizontalItem: { width: 220, marginRight: 12 },
-});
 
 export default DishList;

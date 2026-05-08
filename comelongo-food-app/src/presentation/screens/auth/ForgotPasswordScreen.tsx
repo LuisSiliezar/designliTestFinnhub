@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader, CTAButton } from '@presentation/components/shared';
-import { colors, radius, typography } from '@presentation/theme';
 
 const ForgotPasswordScreen = () => {
     const navigation = useNavigation<any>();
@@ -11,106 +11,60 @@ const ForgotPasswordScreen = () => {
     const [sent, setSent] = useState(false);
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView className="flex-1 bg-cream">
             <AppHeader title=" " serif={false} showBack onBack={() => navigation.goBack()} />
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.eyebrow}>FORGOT PASSWORD</Text>
-                <Text style={styles.title}>Reset your{'\n'}<Text style={styles.italic}>Comelongo</Text>.</Text>
-                <Text style={styles.body}>
-                    Enter the email tied to your account — we'll send a reset link in seconds.
-                </Text>
+            <ScrollView contentContainerStyle={{ padding: 24 }}>
+                <Animated.View entering={FadeInDown.duration(420).springify()}>
+                    <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                        FORGOT PASSWORD
+                    </Text>
+                    <Text
+                        className="font-display text-ink mt-1.5"
+                        style={{ fontSize: 36, lineHeight: 40, letterSpacing: -1 }}
+                    >
+                        Reset your{'\n'}
+                        <Text className="italic text-orange">Comelongo</Text>.
+                    </Text>
+                    <Text className="font-ui text-[15px] leading-[22px] text-muted my-4">
+                        Enter the email tied to your account — we'll send a reset link in seconds.
+                    </Text>
+                </Animated.View>
 
-                <View style={styles.field}>
-                    <Text style={styles.label}>Email</Text>
+                <View className="mb-3.5">
+                    <Text className="font-ui text-xs font-bold text-muted tracking-wide mb-1.5">
+                        Email
+                    </Text>
                     <TextInput
-                        style={styles.input}
+                        className="bg-paper border border-border rounded-md px-4 py-3.5 font-ui text-[15px] text-ink"
                         value={email}
                         onChangeText={setEmail}
                         placeholder="you@email.com"
-                        placeholderTextColor={colors.textSubtle}
+                        placeholderTextColor="#A39B8E"
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
                 </View>
 
                 {sent && (
-                    <View style={styles.confirm}>
-                        <Text style={styles.confirmText}>
+                    <Animated.View
+                        entering={FadeIn.duration(280)}
+                        className="bg-orange-soft p-3 rounded-md my-3"
+                    >
+                        <Text className="font-ui text-orange-deep text-[13px] font-semibold">
                             Sent. Check your inbox in the next minute.
                         </Text>
-                    </View>
+                    </Animated.View>
                 )}
 
                 <CTAButton
                     label={sent ? 'Resend link' : 'Send reset link'}
                     variant="primary"
                     onPress={() => setSent(true)}
-                    style={styles.cta}
+                    style={{ marginTop: 12 }}
                 />
             </ScrollView>
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    container: { padding: 24 },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.5,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 36,
-        lineHeight: 40,
-        color: colors.ink,
-        letterSpacing: -1,
-        marginTop: 6,
-    },
-    italic: { fontStyle: 'italic', color: colors.orange },
-    body: {
-        fontFamily: typography.ui,
-        fontSize: 15,
-        lineHeight: 22,
-        color: colors.textMuted,
-        marginVertical: 16,
-    },
-    field: { marginBottom: 14 },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-        marginBottom: 6,
-    },
-    input: {
-        backgroundColor: colors.paper,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: radius.md,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    cta: { marginTop: 12 },
-    confirm: {
-        backgroundColor: colors.orangeSoft,
-        padding: 12,
-        borderRadius: radius.md,
-        marginVertical: 12,
-    },
-    confirmText: {
-        fontFamily: typography.ui,
-        color: colors.orangeDeep,
-        fontSize: 13,
-        fontWeight: '600',
-    },
-});
 
 export default ForgotPasswordScreen;

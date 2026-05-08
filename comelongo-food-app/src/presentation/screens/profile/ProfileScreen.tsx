@@ -1,9 +1,14 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { AppHeader, CTAButton, ScoreBadge } from '@presentation/components/shared';
-import { colors, typography } from '@presentation/theme';
+import {
+    AnimatedPressable,
+    AppHeader,
+    CTAButton,
+    ScoreBadge,
+} from '@presentation/components/shared';
 import { useAuthStore } from '@core/store';
 import { MockDataService } from '@infrastructure/services';
 
@@ -22,186 +27,110 @@ const ProfileScreen = () => {
     ];
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader
                 title={user.handle}
                 serif={false}
                 rightIcons={[{ name: 'settings', onPress: () => navigation.navigate('Settings') }]}
             />
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <View style={styles.head}>
-                    {user.avatar && <Image source={{ uri: user.avatar }} style={styles.avatar} />}
-                    <Text style={styles.name}>{user.name}</Text>
-                    {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
-                </View>
+            <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+                <Animated.View
+                    entering={FadeInDown.duration(420).springify()}
+                    className="items-center pt-3 px-6"
+                >
+                    {user.avatar && (
+                        <Image
+                            source={{ uri: user.avatar }}
+                            className="w-24 h-24 rounded-full border-[3px] border-orange mb-3.5 bg-warm-gray"
+                        />
+                    )}
+                    <Text
+                        className="font-display text-ink"
+                        style={{ fontSize: 28, letterSpacing: -0.5 }}
+                    >
+                        {user.name}
+                    </Text>
+                    {user.bio && (
+                        <Text
+                            className="font-ui text-[13px] text-muted text-center leading-5 mt-1.5"
+                            style={{ maxWidth: 320 }}
+                        >
+                            {user.bio}
+                        </Text>
+                    )}
+                </Animated.View>
 
-                <View style={styles.statsRow}>
-                    {stats.map(s => (
-                        <View key={s.l} style={styles.stat}>
+                <View className="flex-row gap-2 px-5 mt-5">
+                    {stats.map((s, i) => (
+                        <Animated.View
+                            key={s.l}
+                            entering={FadeIn.delay(150 + i * 60).duration(320)}
+                            className="flex-1 bg-paper rounded-[14px] py-3 px-2 items-center border border-border"
+                        >
                             <Text
-                                style={[
-                                    styles.statValue,
-                                    s.display && styles.statDisplay,
-                                ]}
+                                className={
+                                    s.display
+                                        ? 'font-display text-xl text-ink tracking-tight'
+                                        : 'font-ui text-xl font-extrabold text-ink tracking-tight'
+                                }
                             >
                                 {s.k}
                             </Text>
-                            <Text style={styles.statLabel}>{s.l.toUpperCase()}</Text>
-                        </View>
+                            <Text className="font-ui text-[10px] font-bold text-muted tracking-wider mt-0.5">
+                                {s.l.toUpperCase()}
+                            </Text>
+                        </Animated.View>
                     ))}
                 </View>
 
-                <View style={styles.actions}>
+                <View className="flex-row gap-2 px-5 mt-3.5">
                     <CTAButton
                         label="Edit profile"
                         variant="primary"
-                        style={styles.action}
+                        style={{ flex: 1, height: 44 }}
                         onPress={() => navigation.navigate('EditProfile')}
                     />
-                    <CTAButton label="Share map" variant="light" style={styles.action} />
+                    <CTAButton label="Share map" variant="light" style={{ flex: 1, height: 44 }} />
                 </View>
 
-                <View style={styles.tabsRow}>
+                <View className="flex-row gap-6 px-6 pt-6 pb-3 border-b border-border mx-1">
                     {TABS.map(t => (
-                        <Text
-                            key={t}
-                            onPress={() => setTab(t)}
-                            style={[styles.tab, tab === t && styles.tabActive]}
-                        >
-                            {t}
-                        </Text>
+                        <AnimatedPressable key={t} onPress={() => setTab(t)}>
+                            <Text
+                                className={`font-ui text-sm font-bold pb-2.5 ${
+                                    tab === t
+                                        ? 'text-ink border-b-2 border-orange'
+                                        : 'text-muted'
+                                }`}
+                            >
+                                {t}
+                            </Text>
+                        </AnimatedPressable>
                     ))}
                 </View>
 
-                <View style={styles.grid}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-                        <View key={i} style={styles.gridItem}>
-                            <View style={styles.gridImage} />
-                            <View style={styles.gridScore}>
-                                <ScoreBadge score={6.5 + (i * 0.3)} size={36} showLabel={false} />
+                <View className="flex-row flex-wrap p-3">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i, idx) => (
+                        <Animated.View
+                            key={i}
+                            entering={FadeIn.delay(200 + idx * 40).duration(280)}
+                            className="w-1/3 aspect-square p-0.5 relative"
+                        >
+                            <View className="flex-1 bg-warm-gray rounded-md" />
+                            <View className="absolute top-1.5 right-1.5">
+                                <ScoreBadge
+                                    score={6.5 + i * 0.3}
+                                    size={36}
+                                    showLabel={false}
+                                />
                             </View>
-                        </View>
+                        </Animated.View>
                     ))}
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    scroll: { paddingBottom: 100 },
-    head: { alignItems: 'center', paddingTop: 12, paddingHorizontal: 24 },
-    avatar: {
-        width: 96,
-        height: 96,
-        borderRadius: 48,
-        borderWidth: 3,
-        borderColor: colors.orange,
-        marginBottom: 14,
-        backgroundColor: colors.warmGray,
-    },
-    name: {
-        fontFamily: typography.display,
-        fontSize: 28,
-        color: colors.ink,
-        letterSpacing: -0.5,
-    },
-    bio: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        color: colors.textMuted,
-        textAlign: 'center',
-        lineHeight: 20,
-        marginTop: 6,
-        maxWidth: 320,
-    },
-    statsRow: {
-        flexDirection: 'row',
-        gap: 8,
-        paddingHorizontal: 20,
-        marginTop: 20,
-    },
-    stat: {
-        flex: 1,
-        backgroundColor: colors.paper,
-        borderRadius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    statValue: {
-        fontFamily: typography.ui,
-        fontSize: 20,
-        fontWeight: '800',
-        color: colors.ink,
-        letterSpacing: -0.3,
-    },
-    statDisplay: {
-        fontFamily: typography.display,
-        fontWeight: '400',
-    },
-    statLabel: {
-        fontFamily: typography.ui,
-        fontSize: 10,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-        marginTop: 2,
-    },
-    actions: {
-        flexDirection: 'row',
-        gap: 8,
-        paddingHorizontal: 20,
-        marginTop: 14,
-    },
-    action: { flex: 1, height: 44 },
-    tabsRow: {
-        flexDirection: 'row',
-        gap: 24,
-        paddingHorizontal: 24,
-        paddingTop: 24,
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderColor: colors.border,
-        marginHorizontal: 4,
-    },
-    tab: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        fontWeight: '700',
-        color: colors.textMuted,
-        paddingBottom: 10,
-    },
-    tabActive: {
-        color: colors.ink,
-        borderBottomWidth: 2,
-        borderColor: colors.orange,
-    },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        padding: 12,
-    },
-    gridItem: {
-        width: '33.33%',
-        aspectRatio: 1,
-        padding: 2,
-        position: 'relative',
-    },
-    gridImage: {
-        flex: 1,
-        backgroundColor: colors.warmGray,
-        borderRadius: 8,
-    },
-    gridScore: {
-        position: 'absolute',
-        top: 6,
-        right: 6,
-    },
-});
 
 export default ProfileScreen;

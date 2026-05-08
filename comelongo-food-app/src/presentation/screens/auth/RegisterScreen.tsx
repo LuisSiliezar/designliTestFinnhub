@@ -3,16 +3,18 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { CTAButton } from '@presentation/components/shared';
-import { colors, radius, typography } from '@presentation/theme';
 import { useAuthStore } from '@core/store';
+
+const FIELD_INPUT = 'bg-paper border border-border rounded-md px-4 py-3.5 font-ui text-[15px] text-ink';
+const LABEL = 'font-ui text-xs font-bold text-muted tracking-wide mb-1.5';
 
 const RegisterScreen = () => {
     const navigation = useNavigation<any>();
@@ -28,70 +30,80 @@ const RegisterScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView className="flex-1 bg-cream">
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                style={styles.flex}
+                className="flex-1"
             >
-                <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                    <Text style={styles.eyebrow}>JOIN COMELONGO</Text>
-                    <Text style={styles.title}>Create your{'\n'}<Text style={styles.italic}>foodprint</Text>.</Text>
+                <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+                    <Animated.View entering={FadeInDown.duration(420).springify()}>
+                        <Text className="font-ui text-[11px] font-bold text-orange tracking-wider">
+                            JOIN COMELONGO
+                        </Text>
+                        <Text
+                            className="font-display text-ink mt-1.5 mb-6"
+                            style={{ fontSize: 36, lineHeight: 40, letterSpacing: -1 }}
+                        >
+                            Create your{'\n'}
+                            <Text className="italic text-orange">foodprint</Text>.
+                        </Text>
+                    </Animated.View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Full name</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Full name</Text>
                         <TextInput
-                            style={styles.input}
+                            className={FIELD_INPUT}
                             value={name}
                             onChangeText={setName}
                             placeholder="Mira Castellanos"
-                            placeholderTextColor={colors.textSubtle}
+                            placeholderTextColor="#A39B8E"
                         />
                     </View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Email</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Email</Text>
                         <TextInput
-                            style={styles.input}
+                            className={FIELD_INPUT}
                             value={email}
                             onChangeText={setEmail}
                             placeholder="you@email.com"
-                            placeholderTextColor={colors.textSubtle}
+                            placeholderTextColor="#A39B8E"
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
                     </View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Password</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Password</Text>
                         <TextInput
-                            style={styles.input}
+                            className={FIELD_INPUT}
                             value={password}
                             onChangeText={setPassword}
                             placeholder="••••••••"
-                            placeholderTextColor={colors.textSubtle}
+                            placeholderTextColor="#A39B8E"
                             secureTextEntry
                         />
                     </View>
 
-                    <View style={styles.field}>
-                        <Text style={styles.label}>Confirm password</Text>
+                    <View className="mb-3.5">
+                        <Text className={LABEL}>Confirm password</Text>
                         <TextInput
-                            style={styles.input}
+                            className={FIELD_INPUT}
                             value={confirm}
                             onChangeText={setConfirm}
                             placeholder="••••••••"
-                            placeholderTextColor={colors.textSubtle}
+                            placeholderTextColor="#A39B8E"
                             secureTextEntry
                         />
                     </View>
 
-                    <CTAButton label="Create account" variant="orange" onPress={onSubmit} style={styles.cta} />
+                    <CTAButton label="Create account" variant="orange" onPress={onSubmit} style={{ marginTop: 16 }} />
 
-                    <Text style={styles.footer}>
+                    <Text className="text-center mt-4 font-ui text-[13px] text-muted">
                         Already onboard?{' '}
                         <Text
                             onPress={() => navigation.navigate('Login')}
-                            style={styles.link}
+                            className="text-ink font-bold"
                         >
                             Sign in
                         </Text>
@@ -101,60 +113,5 @@ const RegisterScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    flex: { flex: 1 },
-    container: { padding: 24, paddingBottom: 40 },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.5,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 36,
-        lineHeight: 40,
-        color: colors.ink,
-        letterSpacing: -1,
-        marginTop: 6,
-        marginBottom: 24,
-    },
-    italic: { fontStyle: 'italic', color: colors.orange },
-    field: { marginBottom: 14 },
-    label: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        fontWeight: '700',
-        color: colors.textMuted,
-        letterSpacing: 0.4,
-        marginBottom: 6,
-    },
-    input: {
-        backgroundColor: colors.paper,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: radius.md,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontFamily: typography.ui,
-        fontSize: 15,
-        color: colors.ink,
-    },
-    cta: { marginTop: 16 },
-    footer: {
-        textAlign: 'center',
-        marginTop: 16,
-        fontFamily: typography.ui,
-        fontSize: 13,
-        color: colors.textMuted,
-    },
-    link: {
-        color: colors.ink,
-        fontWeight: '700',
-    },
-});
 
 export default RegisterScreen;

@@ -1,159 +1,78 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, typography } from '@presentation/theme';
+import { Image, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import AnimatedPressable from './AnimatedPressable';
+import HeartButton from './HeartButton';
+import SaveButton from './SaveButton';
 import ScoreBadge from './ScoreBadge';
 import Icon from './Icon';
 import type { ReviewCardProps } from '@infrastructure/interfaces';
 
-const ReviewCard = ({ review, onLike, onComment, onShare, onSave }: ReviewCardProps) => {
-    return (
-        <View style={styles.card}>
-            <View style={styles.header}>
-                <Image source={{ uri: review.author.avatar }} style={styles.avatar} />
-                <View style={styles.headerText}>
-                    <Text style={styles.author}>{review.author.name}</Text>
-                    <Text style={styles.meta}>
-                        {review.author.handle} · {review.createdAt}
-                        {review.city ? ` · ${review.city}` : ''}
+const ReviewCard = ({ review, onComment, onShare, onSave }: ReviewCardProps) => (
+    <Animated.View
+        entering={FadeInDown.duration(360).springify()}
+        className="bg-paper rounded-[22px] mx-4 my-2 border border-border overflow-hidden"
+    >
+        <View className="flex-row items-center gap-2.5 p-3.5">
+            <Image
+                source={{ uri: review.author.avatar }}
+                className="w-9 h-9 rounded-full bg-warm-gray"
+            />
+            <View className="flex-1">
+                <Text className="font-ui text-sm font-bold text-ink">
+                    {review.author.name}
+                </Text>
+                <Text className="font-ui text-xs text-muted">
+                    {review.author.handle} · {review.createdAt}
+                    {review.city ? ` · ${review.city}` : ''}
+                </Text>
+            </View>
+            <SaveButton onToggle={() => onSave?.()} />
+        </View>
+
+        {review.image && (
+            <Animated.View
+                entering={FadeIn.duration(220)}
+                className="h-60 relative bg-warm-gray"
+            >
+                <Image source={{ uri: review.image }} className="w-full h-full" />
+                <View className="absolute top-3 left-3 bg-paper rounded-pill p-1">
+                    <ScoreBadge score={review.score} size={48} />
+                </View>
+                <View className="absolute bottom-3 left-3 bg-ink/85 rounded-xl px-3 py-2">
+                    {review.restaurantName && (
+                        <Text className="font-ui text-[11px] text-paper opacity-70 font-semibold">
+                            {review.restaurantName}
+                        </Text>
+                    )}
+                    <Text className="font-ui text-sm text-paper font-bold">
+                        {review.dishName}
                     </Text>
                 </View>
-                <Pressable onPress={onSave} hitSlop={8}>
-                    <Icon name="bookmark" size={20} />
-                </Pressable>
-            </View>
+            </Animated.View>
+        )}
 
-            {review.image && (
-                <View style={styles.photoWrap}>
-                    <Image source={{ uri: review.image }} style={styles.photo} />
-                    <View style={styles.scoreWrap}>
-                        <ScoreBadge score={review.score} size={48} />
-                    </View>
-                    <View style={styles.placeChip}>
-                        {review.restaurantName && (
-                            <Text style={styles.placeChipPlace}>{review.restaurantName}</Text>
-                        )}
-                        <Text style={styles.placeChipDish}>{review.dishName}</Text>
-                    </View>
-                </View>
-            )}
+        <Text className="font-ui text-sm leading-5 text-ink-soft px-4 py-3">
+            {review.note}
+        </Text>
 
-            <Text style={styles.note}>{review.note}</Text>
-
-            <View style={styles.actions}>
-                <Pressable style={styles.actionBtn} onPress={onLike} hitSlop={6}>
-                    <Icon name="heart" size={20} />
-                    <Text style={styles.actionLabel}>{review.likes ?? 0}</Text>
-                </Pressable>
-                <Pressable style={styles.actionBtn} onPress={onComment} hitSlop={6}>
-                    <Icon name="comment" size={20} />
-                    <Text style={styles.actionLabel}>{review.comments ?? 0}</Text>
-                </Pressable>
-                <View style={styles.flex} />
-                <Pressable onPress={onShare} hitSlop={8}>
-                    <Icon name="share" size={20} />
-                </Pressable>
-            </View>
+        <View className="flex-row items-center gap-4 px-4 pb-3.5">
+            <HeartButton initialLikes={review.likes ?? 0} />
+            <AnimatedPressable
+                onPress={onComment}
+                className="flex-row items-center gap-1.5"
+            >
+                <Icon name="comment" size={20} />
+                <Text className="font-ui text-[13px] font-semibold text-ink">
+                    {review.comments ?? 0}
+                </Text>
+            </AnimatedPressable>
+            <View className="flex-1" />
+            <AnimatedPressable onPress={onShare}>
+                <Icon name="share" size={20} />
+            </AnimatedPressable>
         </View>
-    );
-};
-
-const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.paper,
-        borderRadius: 22,
-        marginHorizontal: 16,
-        marginVertical: 8,
-        borderWidth: 1,
-        borderColor: colors.border,
-        overflow: 'hidden',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        padding: 14,
-    },
-    avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: colors.warmGray,
-    },
-    headerText: { flex: 1 },
-    author: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        fontWeight: '700',
-        color: colors.ink,
-    },
-    meta: {
-        fontFamily: typography.ui,
-        fontSize: 12,
-        color: colors.textMuted,
-    },
-    photoWrap: {
-        height: 240,
-        position: 'relative',
-        backgroundColor: colors.warmGray,
-    },
-    photo: { width: '100%', height: '100%' },
-    scoreWrap: {
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        backgroundColor: colors.paper,
-        borderRadius: radius.pill,
-        padding: 4,
-    },
-    placeChip: {
-        position: 'absolute',
-        bottom: 12,
-        left: 12,
-        backgroundColor: 'rgba(14,14,14,0.85)',
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-    },
-    placeChipPlace: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        color: colors.paper,
-        opacity: 0.7,
-        fontWeight: '600',
-    },
-    placeChipDish: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        color: colors.paper,
-        fontWeight: '700',
-    },
-    note: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        lineHeight: 20,
-        color: colors.inkSoft,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-    },
-    actions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 18,
-        paddingHorizontal: 16,
-        paddingBottom: 14,
-    },
-    actionBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-    },
-    actionLabel: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        fontWeight: '600',
-        color: colors.ink,
-    },
-    flex: { flex: 1 },
-});
+    </Animated.View>
+);
 
 export default ReviewCard;

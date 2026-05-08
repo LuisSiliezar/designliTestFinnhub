@@ -1,64 +1,47 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { AppHeader } from '@presentation/components/shared';
-import { colors, typography } from '@presentation/theme';
 
 const AboutScreen = () => {
     const navigation = useNavigation<any>();
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView edges={['top']} className="flex-1 bg-cream">
             <AppHeader title="About" serif={false} showBack onBack={() => navigation.goBack()} />
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <Text style={styles.brand}>Comelongo</Text>
-                <Text style={styles.version}>Version 1.0.0</Text>
+            <ScrollView contentContainerStyle={{ padding: 24 }}>
+                <Animated.View entering={FadeInDown.duration(420).springify()}>
+                    <Text
+                        className="font-display italic text-ink"
+                        style={{ fontSize: 38, letterSpacing: -1 }}
+                    >
+                        Comelongo
+                    </Text>
+                    <Text className="font-ui text-[13px] text-muted mt-1 mb-6">
+                        Version 1.0.0
+                    </Text>
 
-                <Text style={styles.body}>
-                    Comelongo is a friendlier place to track every dish worth remembering — or warning your friends about. Built for people who keep their best meals on a list, share their favourite spots like secrets, and rate honestly.
-                </Text>
+                    <Text className="font-ui text-[15px] leading-[22px] text-ink-soft">
+                        Comelongo is a friendlier place to track every dish worth remembering — or warning your friends about. Built for people who keep their best meals on a list, share their favourite spots like secrets, and rate honestly.
+                    </Text>
 
-                <View style={styles.linkGroup}>
-                    <Text style={styles.link}>Website · comelongo.app</Text>
-                    <Text style={styles.link}>Twitter · @comelongo</Text>
-                    <Text style={styles.link}>Support · hi@comelongo.app</Text>
-                </View>
+                    <View className="mt-8 gap-2">
+                        <Text className="font-ui text-sm text-orange font-semibold">
+                            Website · comelongo.app
+                        </Text>
+                        <Text className="font-ui text-sm text-orange font-semibold">
+                            Twitter · @comelongo
+                        </Text>
+                        <Text className="font-ui text-sm text-orange font-semibold">
+                            Support · hi@comelongo.app
+                        </Text>
+                    </View>
+                </Animated.View>
             </ScrollView>
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    scroll: { padding: 24 },
-    brand: {
-        fontFamily: typography.display,
-        fontSize: 38,
-        color: colors.ink,
-        fontStyle: 'italic',
-        letterSpacing: -1,
-    },
-    version: {
-        fontFamily: typography.ui,
-        fontSize: 13,
-        color: colors.textMuted,
-        marginTop: 4,
-        marginBottom: 24,
-    },
-    body: {
-        fontFamily: typography.ui,
-        fontSize: 15,
-        lineHeight: 22,
-        color: colors.inkSoft,
-    },
-    linkGroup: { marginTop: 32, gap: 8 },
-    link: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        color: colors.orange,
-        fontWeight: '600',
-    },
-});
 
 export default AboutScreen;

@@ -1,15 +1,14 @@
 import React, { useRef, useState } from 'react';
-import {
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    View,
-} from 'react-native';
+import { Dimensions, FlatList, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, {
+    FadeIn,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
 import { CTAButton } from '@presentation/components/shared';
-import { colors, typography } from '@presentation/theme';
 import { useAuthStore } from '@core/store';
 import { useNavigation } from '@react-navigation/native';
 
@@ -36,11 +35,27 @@ const SLIDES = [
     },
 ];
 
+interface DotProps { active: boolean }
+const Dot = ({ active }: DotProps) => {
+    const w = useSharedValue(active ? 24 : 6);
+    React.useEffect(() => {
+        w.value = withSpring(active ? 24 : 6, { damping: 14, stiffness: 200 });
+    }, [active, w]);
+    const style = useAnimatedStyle(() => ({ width: w.value }));
+    return (
+        <Animated.View
+            style={style}
+            className={`h-1.5 rounded-full ${active ? 'bg-ink' : 'bg-border-strong'}`}
+        />
+    );
+};
+
 const OnboardingScreen = () => {
     const [index, setIndex] = useState(0);
     const ref = useRef<FlatList>(null);
     const navigation = useNavigation<any>();
     const completeOnboarding = useAuthStore(s => s.completeOnboarding);
+    const titleOpacity = useSharedValue(1);
 
     const goNext = () => {
         if (index < SLIDES.length - 1) {
@@ -52,7 +67,7 @@ const OnboardingScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView className="flex-1 bg-cream">
             <FlatList
                 ref={ref}
                 data={SLIDES}
@@ -63,43 +78,63 @@ const OnboardingScreen = () => {
                 onMomentumScrollEnd={(e) => {
                     const i = Math.round(e.nativeEvent.contentOffset.x / width);
                     setIndex(i);
+                    titleOpacity.value = withTiming(1, { duration: 220 });
                 }}
                 renderItem={({ item }) => (
-                    <View style={styles.slide}>
-                        <Image source={{ uri: item.image }} style={styles.image} />
-                        <View style={styles.content}>
-                            <Text style={styles.eyebrow}>{item.eyebrow}</Text>
-                            <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.body}>{item.body}</Text>
-                        </View>
+                    <View style={{ width }} className="items-center">
+                        <Animated.Image
+                            entering={FadeIn.duration(380)}
+                            source={{ uri: item.image }}
+                            style={{
+                                width: width - 40,
+                                height: width - 40,
+                                borderRadius: 28,
+                            }}
+                            className="mt-5 mx-5 bg-warm-gray"
+                        />
+                        <Animated.View
+                            entering={FadeIn.delay(150).duration(420)}
+                            className="px-6 mt-7"
+                        >
+                            <Text className="font-ui text-[11px] font-bold text-orange tracking-wider mb-2.5">
+                                {item.eyebrow}
+                            </Text>
+                            <Text
+                                className="font-display text-ink mb-3"
+                                style={{ fontSize: 38, lineHeight: 42, letterSpacing: -1 }}
+                            >
+                                {item.title}
+                            </Text>
+                            <Text
+                                className="font-ui text-base leading-[22px] text-muted"
+                                style={{ maxWidth: 320 }}
+                            >
+                                {item.body}
+                            </Text>
+                        </Animated.View>
                     </View>
                 )}
             />
 
-            <View style={styles.dots}>
+            <View className="flex-row justify-center gap-1.5 my-4">
                 {SLIDES.map((_, i) => (
-                    <View
-                        key={i}
-                        style={[
-                            styles.dot,
-                            i === index && styles.dotActive,
-                        ]}
-                    />
+                    <Dot key={i} active={i === index} />
                 ))}
             </View>
 
-            <View style={styles.footer}>
+            <View className="px-6 pb-6 gap-3 items-center">
                 <CTAButton
                     label={index === SLIDES.length - 1 ? 'Get started' : 'Next'}
                     variant="primary"
                     onPress={goNext}
+                    style={{ alignSelf: 'stretch' }}
                 />
                 <Text
                     onPress={() => {
                         completeOnboarding();
                         navigation.navigate('Login');
                     }}
-                    style={styles.skip}
+                    className="font-ui text-sm font-semibold text-muted p-2"
                 >
                     Skip
                 </Text>
@@ -107,71 +142,5 @@ const OnboardingScreen = () => {
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.cream },
-    slide: { width, alignItems: 'center' },
-    image: {
-        width: width - 40,
-        height: width - 40,
-        borderRadius: 28,
-        marginTop: 20,
-        marginHorizontal: 20,
-        backgroundColor: colors.warmGray,
-    },
-    content: { paddingHorizontal: 24, marginTop: 28 },
-    eyebrow: {
-        fontFamily: typography.ui,
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.orange,
-        letterSpacing: 1.5,
-        marginBottom: 10,
-    },
-    title: {
-        fontFamily: typography.display,
-        fontSize: 38,
-        lineHeight: 42,
-        color: colors.ink,
-        letterSpacing: -1,
-        marginBottom: 12,
-    },
-    body: {
-        fontFamily: typography.ui,
-        fontSize: 16,
-        lineHeight: 22,
-        color: colors.textMuted,
-        maxWidth: 320,
-    },
-    dots: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 6,
-        marginVertical: 16,
-    },
-    dot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: colors.borderStrong,
-    },
-    dotActive: {
-        width: 24,
-        backgroundColor: colors.ink,
-    },
-    footer: {
-        paddingHorizontal: 24,
-        paddingBottom: 24,
-        gap: 12,
-        alignItems: 'center',
-    },
-    skip: {
-        fontFamily: typography.ui,
-        fontSize: 14,
-        fontWeight: '600',
-        color: colors.textMuted,
-        padding: 8,
-    },
-});
 
 export default OnboardingScreen;

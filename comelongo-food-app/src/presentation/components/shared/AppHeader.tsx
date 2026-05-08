@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '@presentation/theme';
+import { Text, View } from 'react-native';
+import AnimatedPressable from './AnimatedPressable';
 import Icon, { IconName } from './Icon';
 
 interface Props {
@@ -11,75 +11,42 @@ interface Props {
     serif?: boolean;
 }
 
+const ICON_BTN = 'w-10 h-10 rounded-full items-center justify-center bg-paper border border-border relative';
+
 const AppHeader = ({ title = 'Comelongo', showBack, onBack, rightIcons = [], serif = true }: Props) => (
-    <View style={styles.header}>
+    <View className="flex-row items-center justify-between px-3 py-2.5 bg-cream">
         {showBack ? (
-            <Pressable onPress={onBack} style={styles.iconBtn} hitSlop={8}>
+            <AnimatedPressable onPress={onBack} className={ICON_BTN}>
                 <Icon name="chevron-left" size={22} />
-            </Pressable>
+            </AnimatedPressable>
         ) : (
-            <View style={styles.iconBtn} />
+            <View className={ICON_BTN.replace('bg-paper border border-border', 'bg-transparent')} />
         )}
-        <Text style={[styles.title, serif && styles.titleSerif]}>{title}</Text>
-        <View style={styles.right}>
+
+        <Text
+            className={
+                serif
+                    ? 'font-display italic text-2xl text-ink'
+                    : 'font-ui text-lg font-bold text-ink'
+            }
+        >
+            {title}
+        </Text>
+
+        <View className="flex-row gap-2">
             {rightIcons.map((r, i) => (
-                <Pressable key={i} onPress={r.onPress} style={styles.iconBtn} hitSlop={8}>
+                <AnimatedPressable key={i} onPress={r.onPress} className={ICON_BTN}>
                     <Icon name={r.name} size={20} />
-                    {r.badge && <View style={styles.badge} />}
-                </Pressable>
+                    {r.badge && (
+                        <View className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-orange border-[1.5px] border-paper" />
+                    )}
+                </AnimatedPressable>
             ))}
-            {rightIcons.length === 0 && <View style={styles.iconBtn} />}
+            {rightIcons.length === 0 && (
+                <View className={ICON_BTN.replace('bg-paper border border-border', 'bg-transparent')} />
+            )}
         </View>
     </View>
 );
-
-const styles = StyleSheet.create({
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: colors.cream,
-    },
-    iconBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.paper,
-        borderWidth: 1,
-        borderColor: colors.border,
-        position: 'relative',
-    },
-    right: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    title: {
-        fontFamily: typography.ui,
-        fontSize: 18,
-        fontWeight: '700',
-        color: colors.ink,
-    },
-    titleSerif: {
-        fontFamily: typography.display,
-        fontStyle: 'italic',
-        fontSize: 24,
-        fontWeight: '400',
-    },
-    badge: {
-        position: 'absolute',
-        top: 9,
-        right: 10,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: colors.orange,
-        borderWidth: 1.5,
-        borderColor: colors.paper,
-    },
-});
 
 export default AppHeader;
